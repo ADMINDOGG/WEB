@@ -2,40 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Roblox Stats Viewer</title>
+  <title>Roblox Profile Viewer</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #1a1a1a;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 50px;
-    }
-    input {
-      padding: 8px;
-      margin-bottom: 10px;
-      border: none;
-      border-radius: 5px;
-    }
-    button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 5px;
-      background-color: crimson;
+      background-color: #1b1b1b;
       color: white;
-      cursor: pointer;
-    }
-    .profile {
-      margin-top: 20px;
       text-align: center;
+      padding: 50px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px;
     }
     .avatar {
-      width: 150px;
-      height: 150px;
-      border-radius: 12px;
-      margin-bottom: 10px;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -45,49 +27,53 @@
   <input type="text" id="usernameInput" placeholder="Enter Roblox username">
   <button onclick="fetchRobloxData()">Search</button>
 
-  <div class="profile" id="profile">
-    <!-- Info will be displayed here -->
-  </div>
+  <div class="avatar" id="result"></div>
 
   <script>
     async function fetchRobloxData() {
       const username = document.getElementById("usernameInput").value.trim();
-      const profileDiv = document.getElementById("profile");
+      const result = document.getElementById("result");
+      result.innerHTML = "⏳ Loading...";
 
-      if (!username) return alert("Please enter a username.");
+      try {
+        // 1. Get user ID from username
+        const res1 = await fetch("https://users.roblox.com/v1/usernames/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ usernames: [username] })
+        });
+        const data1 = await res1.json();
 
-      // Step 1: Get userId from username
-      const res1 = await fetch(`https://users.roblox.com/v1/usernames/users`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernames: [username] })
-      });
-      const data1 = await res1.json();
+        if (!data1.data || data1.data.length === 0) {
+          result.innerHTML = "❌ User not found!";
+          return;
+        }
 
-      if (!data1.data || data1.data.length === 0) {
-        profileDiv.innerHTML = `<p>User not found</p>`;
-        return;
+        const userId = data1.data[0].id;
+
+        // 2. Get profile info
+        const profileRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+        const profile = await profileRes.json();
+
+        // 3. Get avatar thumbnail
+        const avatarRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=150x150&format=Png`);
+        const avatarData = await avatarRes.json();
+        const avatarUrl = avatarData.data[0].imageUrl;
+
+        // 4. Display result
+        result.innerHTML = `
+          <img src="${avatarUrl}" alt="Avatar" width="150" height="150"><br>
+          <strong>${profile.displayName}</strong><br>
+          Username: ${profile.name}<br>
+          User ID: ${userId}<br>
+          Description: ${profile.description || "No description."}
+        `;
+      } catch (error) {
+        console.error(error);
+        result.innerHTML = "⚠️ Error fetching data.";
       }
-
-      const userId = data1.data[0].id;
-
-      // Step 2: Get user profile
-      const res2 = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-      const userData = await res2.json();
-
-      // Step 3: Get avatar thumbnail
-      const res3 = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
-      const avatarData = await res3.json();
-      const avatarUrl = avatarData.data[0].imageUrl;
-
-      profileDiv.innerHTML = `
-        <img class="avatar" src="${avatarUrl}">
-        <h2>${userData.name}</h2>
-        <p><strong>Display Name:</strong> ${userData.displayName}</p>
-        <p><strong>User ID:</strong> ${userId}</p>
-        <p><strong>Description:</strong> ${userData.description || 'N/A'}</p>
-      `;
     }
   </script>
+
 </body>
 </html>
