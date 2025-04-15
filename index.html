@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLACK OUT SCRIPT | PREMIUM SCRIPTS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --main-bg: #000000;
+      --sec-bg: #0c0c0c;
+      --accent: #00ff66;
+      --accent-dark: #00cc55;
+      --text: #ffffff;
+      --text-sec: #cccccc;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Kanit', sans-serif;
+    }
+    
+    body {
+      background-color: var(--main-bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7)),
+        url('https://sv1.img.in.th/7I2Xab.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      position: relative;
+    }
+    
+    .logo-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .logo-glow {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      filter: blur(20px);
+      opacity: 0.3;
+      z-index: 0;
+      animation: glow 3s infinite alternate;
+    }
+    
+    @keyframes glow {
+      0% {
+        opacity: 0.2;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0.5;
+        transform: scale(1.2);
+      }
+    }
+    
+    .title {
+      font-size: 4rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--text);
+      text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent), 0 0 30px var(--accent-dark);
+    }
+    
+    .subtitle {
+      color: var(--text-sec);
+      font-size: 1.5rem;
+      margin-bottom: 30px;
+    }
+    
+    .accent-text {
+      color: var(--accent);
+      font-weight: bold;
+    }
+    
+    .content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .img-container {
+      flex: 1;
+      min-width: 300px;
+      max-width: 550px;
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 255, 102, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .img-container:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 0 40px rgba(0, 255, 102, 0.5);
+    }
+    
+    .img-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+    
+    .img-container:hover img {
+      transform: scale(1.05);
+    }
+    
+    .img-container::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5));
+      pointer-events: none;
+    }
+    
+    .info {
+      flex: 1;
+      min-width: 300px;
+      padding: 30px;
+      background-color: rgba(12, 12, 12, 0.8);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 102, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .info::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(to right, transparent, var(--accent), transparent);
+      animation: border-glow 3s infinite;
+    }
+    
+    @keyframes border-glow {
+      0% {
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.3;
+      }
+    }
+    
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      color: var(--accent);
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+    }
+    
+    .info p {
+      margin-bottom: 20px;
+      font-size: 1.1rem;
+      color: var(--text-sec);
+    }
+    
+    .features {
+      margin: 25px 0;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .feature i {
+      color: var(--accent);
+      font-size: 1.3rem;
+      margin-right: 15px;
+      text-shadow: 0 0 5px var(--accent);
+    }
+    
+    .price {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: var(--accent);
+      margin: 30px 0;
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+    }
+    
+    .price-old {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 1.5rem;
+      margin-right: 15px;
+    }
+    
+    .btn {
+      display: inline-block;
+      background-color: var(--accent);
+      color: #111;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 15px 40px;
+      border-radius: 30px;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.5);
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%);
+      transition: all 0.6s ease;
+    }
+    
+    .btn:hover {
+      background-color: var(--accent-dark);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 255, 102, 0.4);
+    }
+    
+    .btn:hover::before {
+      left: 100%;
+    }
+    
+    .testimonials {
+      margin-top: 80px;
+      text-align: center;
+    }
+    
+    .testimonials h2 {
+      margin-bottom: 40px;
+    }
+    
+    .reviews {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 30px;
+    }
+    
+    .review {
+      background-color: rgba(12, 12, 12, 0.8);
+      padding: 25px;
+      border-radius: 10px;
+      max-width: 350px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 102, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .review:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 10px 30px rgba(0, 255, 102, 0.2);
+    }
+    
+    .stars {
+      color: var(--accent);
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+    }
+    
+    .review-text {
+      font-style: italic;
+      margin-bottom: 20px;
+      color: var(--text-sec);
+    }
+    
+    .reviewer {
+      font-weight: bold;
+    }
+    
+    .faq {
+      margin-top: 80px;
+      text-align: center;
+    }
+    
+    .faq h2 {
+      margin-bottom: 40px;
+    }
+    
+    .faq-item {
+      text-align: left;
+      background-color: rgba(12, 12, 12, 0.8);
+      margin-bottom: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(0, 255, 102, 0.1);
+    }
+    
+    .faq-question {
+      padding: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .faq-question:hover {
+      background-color: rgba(0, 255, 102, 0.1);
+    }
+    
+    .faq-question i {
+      color: var(--accent);
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+    
+    .faq-answer {
+      padding: 0 20px;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      color: var(--text-sec);
+    }
+    
+    .faq-item.active .faq-answer {
+      padding: 0 20px 20px;
+      max-height: 500px;
+    }
+    
+    .faq-item.active .faq-question i {
+      transform: rotate(180deg);
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 100px;
+      padding: 30px 0;
+      color: var(--text-sec);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .social-links {
+      margin: 20px 0;
+    }
+    
+    .social-links a {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      margin: 0 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .social-links a:hover {
+      background-color: var(--accent);
+      color: #111;
+      transform: translateY(-3px);
+    }
+    
+    .discount-badge {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: var(--accent);
+      color: #111;
+      font-weight: bold;
+      padding: 5px 15px;
+      border-radius: 20px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .title {
+        font-size: 2.5rem;
+      }
+      
+      .subtitle {
+        font-size: 1.2rem;
+      }
+      
+      .content {
+        flex-direction: column;
+      }
+      
+      .img-container, .info {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-container">
+        <div class="logo-glow"></div>
+        <h1 class="title">BLACK OUT <span class="accent-text">SCRIPT</span></h1>
+      </div>
+      <p class="subtitle">ยกระดับประสบการณ์เกมของคุณด้วยสคริปต์ระดับพรีเมี่ยม</p>
+    </header>
+    
+    <div class="content">
+      <div class="img-container">
+        <img src="https://sv1.img.in.th/7I2Xab.png" alt="BLACK OUT Map Script">
+        <div class="discount-badge">ลด 30%</div>
+      </div>
+      
+      <div class="info">
+        <h2>BLACK OUT MAP SCRIPT</h2>
+        <p>สคริปต์แมพ BLACK OUT คุณภาพเยี่ยม ให้คุณได้เพลิดเพลินกับประสบการณ์การเล่นเกมที่เหนือระดับ ด้วยฟีเจอร์มากมายที่จะช่วยให้คุณเล่นได้อย่างเต็มประสิทธิภาพ</p>
+        
+        <div class="features">
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <div>ระบบเติมเงินอัตโนมัติรองรับทุกธนาคาร</div>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <div>ทีมงานเป็นคนดีทุกคน มั้งนะ</div>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <div>รองรับ wave,awp,macsploit</div>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <div>ความปลอดภัยสูง ไม่มีการแบน    นอกจากจะโดนเเอดมิน</div>
+          </div>
+          <div class="feature">
+            <i class="fas fa-check-circle"></i>
+            <div>ซัพพอร์ตตลอด 24 ชั่วโมง</div>
+          </div>
+        </div>
+        
+        <div class="price">
+          <span class="price-old">฿520</span>
+          480
+        </div>
+        
+        <a href="#contact" class="btn">สั่งซื้อเลย</a>
+      </div>
+    </div>
+    
+    <div class="testimonials">
+      <h2>รีวิวจากลูกค้า</h2>
+      <div class="reviews">
+        <div class="review">
+          <div class="stars">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+          <p class="review-text">"สคริปต์ทำงานได้ดีมาก ไม่มีปัญหาเลย คุ้มค่ากับราคาที่จ่ายไป ระบบเงินทำงานได้ลื่นมาก!"</p>
+          <div class="reviewer">NIGGA MAN</div>
+        </div>
+        
+        <div class="review">
+          <div class="stars">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+          </div>
+          <p class="review-text">"ซื้อมาใช้หลายสคริปต์แล้ว อันนี้ดีที่สุด แอดมินใส่ใจลูกค้า ตอบคำถามเร็วมาก แนะนำเลย!"</p>
+          <div class="reviewer">smait</div>
+        </div>
+        
+        <div class="review">
+          <div class="stars">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star-half-alt"></i>
+          </div>
+          <p class="review-text">"คุณภาพดีมาก ไม่มีบัค อัพเดทบ่อย คุ้มค่ากับเงินที่เสียไป ทีมงานซัพพอร์ตดีเยี่ยม"</p>
+          <div class="reviewer">NORA</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="faq">
+      <h2>คำถามที่พบบ่อย</h2>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          สคริปต์นี้ใช้งานได้กับเซิร์ฟเวอร์อะไรได้บ้าง?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          รายระเอียดสามารถ ถามใน ticket ได้เลยใน discord
+        </div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          มีเเบบไหนบ้าง
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          1วัน,3วัน,7วัน,ตลอดชีพ
+        </div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          หลังจากชำระเงินแล้วจะได้รับสคริปต์เมื่อไหร่?
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          หลังจากชำระเงินและแจ้งสลิป คุณจะได้รับสคริปต์ภายใน 1-5 นาที ผ่านทาง Discord หรืออีเมลที่คุณระบุไว้
+        </div>
+      </div>
+      
+      <div class="faq-item">
+        <div class="faq-question">
+          มีการพัฒนาไหม
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          scriptของทางเรามาการพัฒนาทุกๆ2-3สัปดาห์
+        </div>
+      </div>
+    </div>
+
+    <footer>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-discord"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+        
+        <!-- เพิ่มส่วนข้อมูลผู้สร้างเว็บไซต์ (ขนาดใหญ่) -->
+        <div class="creator-info" style="margin: 30px 0; padding: 20px; background: rgba(0, 255, 102, 0.15); border-radius: 15px; display: inline-block; border: 1px solid var(--accent);">
+          <p style="font-size: 24px; color: var(--accent); font-weight: bold;">
+            <i class="fas fa-code" style="margin-right: 15px; font-size: 28px;"></i>
+            เว็บนี้สร้างโดย <span style="font-weight: 800; text-shadow: 0 0 10px var(--accent); letter-spacing: 1px; font-size: 28px;">มิวนิค</span>
+          </p>
+        </div>
+        
+        <p>&copy; 2025 BLACK OUT SCRIPTS. All Rights Reserved.</p>
+      </footer>
+      
+    <div id="contact" class="contact" style="margin-top: 80px; text-align: center;">
+      <h2>ติดต่อเรา</h2>
+      <p style="color: var(--text-sec); margin-bottom: 30px;">สนใจสั่งซื้อหรือสอบถามข้อมูลเพิ่มเติม สามารถติดต่อเราได้ที่</p>
+      
+      <a href="https://discord.gg/yTeu5V7sNJ" class="btn" style="margin-right: 15px;">
+        <i class="fab fa-discord" style="margin-right: 10px;"></i> Discord
+      </a>
+      
+      <a href="#" class="btn" style="background-color: #25D366; margin-left: 15px;">
+        <i class="fab fa-whatsapp" style="margin-right: 10px;"></i> Line
+      </a>
+    </div>
+    
+    <footer>
+      <div class="social-links">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-discord"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+      <p>&copy; 2025 BLACK OUT SCRIPTS. All Rights Reserved.</p>
+    </footer>
+  </div>
+  
+  
+  <script>
+    // FAQs Toggle
+    document.querySelectorAll('.faq-question').forEach(item => {
+      item.addEventListener('click', event => {
+        const parent = item.parentElement;
+        parent.classList.toggle('active');
+      });
+    });
+  </script>
+</body>
+</html>
