@@ -1,79 +1,426 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Roblox Profile Viewer</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background-color: #1b1b1b;
-      color: white;
-      text-align: center;
-      padding: 50px;
-    }
-    input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 5px;
-    }
-    .avatar {
-      margin-top: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DogHub - Pricing</title>
+    <style>
+        :root {
+            --primary-color: #5865F2;
+            --secondary-color: #000000;
+            --accent-color: #7289DA;
+            --text-color: #FFFFFF;
+            --background-color: #000000;
+            --card-color: #1A1A1A;
+            --highlight-color: #ED4245;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--secondary-color);
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+        
+        .logo span {
+            color: var(--primary-color);
+        }
+        
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
+        
+        .pricing-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .pricing-card {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .pricing-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .discount {
+            text-decoration: line-through;
+            color: var(--highlight-color);
+            margin-right: 10px;
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            color: var(--highlight-color);
+            font-weight: bold;
+        }
+        
+        .executors-section {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .executors-title {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .executors-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 20px;
+        }
+        
+        .executor-category {
+            flex: 1;
+            min-width: 280px;
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+        
+        .executor-item {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .warning {
+            border-left: 3px solid var(--highlight-color);
+        }
+        
+        .warning-icon {
+            color: var(--highlight-color);
+            margin-right: 5px;
+        }
+        
+        .payment-section {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+        
+        .payment-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .payment-method {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 15px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .payment-instructions {
+            margin-bottom: 20px;
+        }
+        
+        .robux-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(88, 101, 242, 0.1);
+            border-radius: 5px;
+            border: 1px solid var(--primary-color);
+        }
+        
+        .robux-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .robux-link:hover {
+            text-decoration: underline;
+        }
+        
+        .robux-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            background-color: var(--secondary-color);
+            margin-top: 30px;
+        }
+        
+        .button {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .button:hover {
+            background-color: var(--accent-color);
+        }
+        
+        @media (max-width: 768px) {
+            .pricing-section {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .pricing-card {
+                width: 100%;
+            }
+            
+            .executors-list {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <div class="container">
+            <div class="logo">DOG<span>HUB</span></div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h2>Pricing Plans</h2>
+        
+        <div class="pricing-section">
+            <div class="pricing-card">
+                <h3 class="card-title">English Pricing</h3>
+                
+                <div class="pricing-item">
+                    <span>1 Day</span>
+                    <span>$2.50</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>3 Days</span>
+                    <span>$5.00</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>7 Days</span>
+                    <span>$8.00</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>Lifetime</span>
+                    <span><span class="discount">$14.44</span> $12.00</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>Undetectable</span>
+                    <span>$16.67</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>Private (Personal)</span>
+                    <span>$33.33</span>
+                </div>
+            </div>
+            
+            <div class="pricing-card">
+                <h3 class="card-title">Thai Pricing</h3>
+                
+                <div class="pricing-item">
+                    <span>1 วัน</span>
+                    <span>90 บาท</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>3 วัน</span>
+                    <span>180 บาท</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>7 วัน</span>
+                    <span>290 บาท</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>ตลอดชีพ</span>
+                    <span><span class="discount">520 บาท</span> 480 บาท</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>Undetectable (เเอดมินตรวจสอบไม่เจอ)</span>
+                    <span>600 บาท</span>
+                </div>
+                
+                <div class="pricing-item">
+                    <span>Private (ส่วนตัว) (ปลอดภัย100%)</span>
+                    <span>1200 บาท</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="executors-section">
+            <h3 class="executors-title">ตัวรันที่รองรับโค้ดของคุณ | Executors Compatible with Your Code</h3>
+            
+            <div class="executors-list">
+                <div class="executor-category">
+                    <h4 class="category-title">ใช้งานได้เต็มประสิทธิภาพ | Fully Supported</h4>
+                    <div class="executor-item">WAVE</div>
+                    <div class="executor-item">AWP</div>
+                    <div class="executor-item">Macspoilt</div>
+                </div>
+                
+                <div class="executor-category">
+                    <h4 class="category-title">รองรับบางส่วน | Partially Supported</h4>
+                    <div class="executor-item warning"><span class="warning-icon">⚠</span> Solara</div>
+                    <div class="executor-item warning"><span class="warning-icon">⚠</span> Xeno</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="payment-section">
+            <h3 class="payment-title">วิธีการชำระเงิน | Payment Methods</h3>
+            
+            <div class="payment-methods">
+                <div class="payment-method">TrueMoney</div>
+                <div class="payment-method">PromptPay</div>
+            </div>
+            
+            <div class="payment-instructions">
+                <p>หากต้องการซื้อ ให้สร้างตั๋วใน ⁠⁠ticket</p>
+                <p>To purchase, create a ticket in ⁠⁠ticket</p>
+            </div>
+            
+            <div class="robux-section">
+                <p class="highlight">Now everyone can purchase with ROBUX</p>
+                <a href="https://www.roblox.com/game-pass/1145448806/BUY-DOGHUB" class="robux-link" target="_blank">https://www.roblox.com/game-pass/1145448806/BUY-DOGHUB</a>
+                <div>
+                    <img src="https://sv1.img.in.th/7IBO5b.png" alt="DOGHUB ROBUX" class="robux-image">
+                </div>
+            </div>
+            
+            <div class="blackout-section" style="margin-top: 50px; text-align: left; background-color: var(--card-color); padding: 30px; border-radius: 10px;">
+                <h3 style="text-align: center; color: var(--primary-color); margin-bottom: 20px; font-size: 1.5rem;">BLACK OUT MAP SCRIPT</h3>
+                
+                <p style="margin-bottom: 15px;">สคริปต์แมพ BLACK OUT คุณภาพเยี่ยม ให้คุณได้เพลิดเพลินกับประสบการณ์การเล่นเกมที่เหนือระดับ ด้วยฟีเจอร์มากมายที่จะช่วยให้คุณเล่นได้อย่างเต็มประสิทธิภาพ</p>
+                
+                <ul style="list-style-type: none; margin-bottom: 20px;">
+                    <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">✅ ระบบเติมเงินอัตโนมัติรองรับทุกธนาคาร</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">✅ ทีมงานเป็นคนดีทุกคน มั้งนะ</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">✅ รองรับ wave,awp,macsploit</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">✅ ความปลอดภัยสูง ไม่มีการแบน นอกจากจะโดนเเอดมิน</li>
+                    <li style="padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">✅ ซัพพอร์ตตลอด 24 ชั่วโมง</li>
+                </ul>
+                
+                <div style="background-color: rgba(88, 101, 242, 0.1); padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;">**สคริปต์นี้ใช้งานได้กับเซิร์ฟเวอร์อะไรได้บ้าง?**</h4>
+                    <p>รายระเอียดสามารถ ถามใน ticket ได้เลยใน discord</p>
+                </div>
+                
+                <div style="background-color: rgba(88, 101, 242, 0.1); padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;">**หลังจากชำระเงินแล้วจะได้รับสคริปต์เมื่อไหร่?**</h4>
+                    <p>หลังจากชำระเงินและแจ้งสลิป คุณจะได้รับสคริปต์ภายใน 1-5 นาที ผ่านทาง Discord หรืออีเมลที่คุณระบุไว้</p>
+                </div>
+                
+                <div style="background-color: rgba(88, 101, 242, 0.1); padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h4 style="color: var(--accent-color); margin-bottom: 10px;">**มีการพัฒนาไหม**</h4>
+                    <p>scriptของทางเรามาการพัฒนาทุกๆ2-3สัปดาห์</p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <h4 style="margin-bottom: 15px;">ติดต่อเรา</h4>
+                    <a href="https://discord.gg/yTeu5V7sNJ" style="color: var(--accent-color); text-decoration: none; font-weight: bold;" target="_blank">https://discord.gg/yTeu5V7sNJ</a>
+                </div>
+            </div>
+            
 
-  <h1>🔍 Roblox Profile Viewer</h1>
-  <input type="text" id="usernameInput" placeholder="Enter Roblox username">
-  <button onclick="fetchRobloxData()">Search</button>
-
-  <div class="avatar" id="result"></div>
-
-  <script>
-    async function fetchRobloxData() {
-      const username = document.getElementById("usernameInput").value.trim();
-      const result = document.getElementById("result");
-      result.innerHTML = "⏳ Loading...";
-
-      try {
-        // 1. Get user ID from username
-        const res1 = await fetch("https://users.roblox.com/v1/usernames/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ usernames: [username] })
-        });
-        const data1 = await res1.json();
-
-        if (!data1.data || data1.data.length === 0) {
-          result.innerHTML = "❌ User not found!";
-          return;
-        }
-
-        const userId = data1.data[0].id;
-
-        // 2. Get profile info
-        const profileRes = await fetch(`https://users.roblox.com/v1/users/${userId}`);
-        const profile = await profileRes.json();
-
-        // 3. Get avatar thumbnail
-        const avatarRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=150x150&format=Png`);
-        const avatarData = await avatarRes.json();
-        const avatarUrl = avatarData.data[0].imageUrl;
-
-        // 4. Display result
-        result.innerHTML = `
-          <img src="${avatarUrl}" alt="Avatar" width="150" height="150"><br>
-          <strong>${profile.displayName}</strong><br>
-          Username: ${profile.name}<br>
-          User ID: ${userId}<br>
-          Description: ${profile.description || "No description."}
-        `;
-      } catch (error) {
-        console.error(error);
-        result.innerHTML = "⚠️ Error fetching data.";
-      }
-    }
-  </script>
-
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2025 DOGHUB. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
