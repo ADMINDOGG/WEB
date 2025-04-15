@@ -1,472 +1,93 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BLACK OUT SCRIPT | ระบบโดเนท</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <title>Roblox Stats Viewer</title>
   <style>
-    :root {
-      --main-bg: #000000;
-      --sec-bg: #0c0c0c;
-      --accent: #00ff66;
-      --accent-dark: #00cc55;
-      --text: #ffffff;
-      --text-sec: #cccccc;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', 'Kanit', sans-serif;
-    }
-    
     body {
-      background-color: var(--main-bg);
-      color: var(--text);
-      line-height: 1.6;
-      background-image: 
-        linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.7)),
-        url('https://sv1.img.in.th/7I2Xab.png');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-      height: 100vh;
+      font-family: sans-serif;
+      background: #1a1a1a;
+      color: #fff;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      padding-top: 50px;
     }
-    
-    .container {
-      max-width: 600px;
-      width: 90%;
-      padding: 40px;
-      background-color: rgba(12, 12, 12, 0.8);
-      border-radius: 15px;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(0, 255, 102, 0.2);
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-    }
-    
-    .container::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(to right, transparent, var(--accent), transparent);
-      animation: glow 3s infinite alternate;
-    }
-    
-    @keyframes glow {
-      0% {
-        opacity: 0.3;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-    
-    .title {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 20px;
-      text-align: center;
-      color: var(--accent);
-      text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
-    }
-    
-    .subtitle {
-      color: var(--text-sec);
-      font-size: 1.2rem;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-    
-    .input-group {
-      margin-bottom: 25px;
-    }
-    
-    .label {
-      display: block;
+    input {
+      padding: 8px;
       margin-bottom: 10px;
-      font-weight: bold;
-      color: var(--text);
-    }
-    
-    .input {
-      width: 100%;
-      padding: 15px;
-      border-radius: 8px;
-      background-color: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(0, 255, 102, 0.3);
-      color: var(--text);
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-    
-    .input:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
-    }
-    
-    .btn {
-      display: block;
-      width: 100%;
-      background-color: var(--accent);
-      color: #111;
-      font-size: 1.2rem;
-      font-weight: bold;
-      padding: 15px;
-      border-radius: 8px;
-      text-align: center;
-      text-decoration: none;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      transition: all 0.3s ease;
       border: none;
-      cursor: pointer;
-      margin-top: 10px;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
-      transition: all 0.6s ease;
-    }
-    
-    .btn:hover {
-      background-color: var(--accent-dark);
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    }
-    
-    .btn:hover::before {
-      left: 100%;
-    }
-    
-    .icon {
-      display: inline-block;
-      margin-right: 10px;
-    }
-    
-    .help-text {
-      font-size: 0.9rem;
-      color: var(--text-sec);
-      margin-top: 8px;
-    }
-    
-    .result-container {
-      display: none;
-      margin-top: 30px;
-      padding: 20px;
-      background-color: rgba(0, 0, 0, 0.5);
-      border-radius: 8px;
-      border-left: 3px solid var(--accent);
-    }
-    
-    .result-title {
-      font-size: 1.2rem;
-      color: var(--accent);
-      margin-bottom: 10px;
-    }
-    
-    .result-link {
-      word-break: break-all;
-      color: var(--text);
-      background-color: rgba(0, 0, 0, 0.3);
-      padding: 10px;
       border-radius: 5px;
-      margin: 10px 0;
-      display: block;
     }
-    
-    .copy-btn {
-      background-color: rgba(0, 255, 102, 0.2);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-      padding: 8px 15px;
+    button {
+      padding: 8px 16px;
+      border: none;
       border-radius: 5px;
+      background-color: crimson;
+      color: white;
       cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-      margin-top: 10px;
     }
-    
-    .copy-btn:hover {
-      background-color: var(--accent);
-      color: #111;
-    }
-    
-    .steps {
-      margin-top: 30px;
-    }
-    
-    .step {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 15px;
-    }
-    
-    .step-number {
-      background-color: var(--accent);
-      color: #111;
-      width: 25px;
-      height: 25px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      margin-right: 15px;
-      flex-shrink: 0;
-    }
-    
-    .step-content {
-      color: var(--text-sec);
-    }
-    
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      color: var(--text-sec);
-      font-size: 0.8rem;
-    }
-    
-    /* ส่วนแสดงผลการทำงาน */
-    .status {
+    .profile {
       margin-top: 20px;
-      padding: 10px;
-      border-radius: 5px;
       text-align: center;
-      font-weight: bold;
-      display: none;
     }
-    
-    .status.success {
-      background-color: rgba(0, 255, 102, 0.2);
-      color: var(--accent);
-      border: 1px solid var(--accent);
-    }
-    
-    .status.error {
-      background-color: rgba(255, 0, 0, 0.2);
-      color: #ff5555;
-      border: 1px solid #ff5555;
-    }
-    
-    /* สำหรับภาพเคลื่อนไหวโหลดดิ้ง */
-    .loading {
-      display: none;
-      text-align: center;
-      margin: 20px 0;
-    }
-    
-    .loading i {
-      color: var(--accent);
-      font-size: 2rem;
-      animation: spin 1s infinite linear;
-    }
-    
-    @keyframes spin {
-      0% {
-        transform: rotate(0deg);
-      }
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .container {
-        padding: 30px 20px;
-      }
-      
-      .title {
-        font-size: 2rem;
-      }
-      
-      .subtitle {
-        font-size: 1rem;
-      }
+    .avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 12px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="title">
-      <i class="fas fa-gift icon"></i>ระบบโดเนท
-    </h1>
-    <p class="subtitle">วางลิงก์อั่งเปาทรูมันนี่ เพื่อโดเนทให้เรา</p>
-    
-    <div class="input-group">
-      <label class="label" for="angpao-link">ลิงก์อั่งเปาทรูมันนี่:</label>
-      <input type="text" id="angpao-link" class="input" placeholder="วางลิงก์อั่งเปาตรงนี้...">
-      <p class="help-text">* วางลิงก์อั่งเปาทรูมันนี่ที่คุณได้รับจากแอพ TrueMoney Wallet</p>
-    </div>
-    
-    <button id="process-btn" class="btn">
-      <i class="fas fa-exchange-alt icon"></i>ดำเนินการ
-    </button>
-    
-    <div class="loading">
-      <i class="fas fa-spinner"></i>
-    </div>
-    
-    <div id="status-message" class="status"></div>
-    
-    <div id="result-container" class="result-container">
-      <h3 class="result-title">ลิงก์อั่งเปาพร้อมใช้งาน:</h3>
-      <div id="result-link" class="result-link"></div>
-      <button id="copy-btn" class="copy-btn">
-        <i class="fas fa-copy icon"></i>คัดลอกลิงก์
-      </button>
-      <button id="open-btn" class="btn" style="margin-top: 15px;">
-        <i class="fas fa-external-link-alt icon"></i>เปิดลิงก์
-      </button>
-    </div>
-    
-    <div class="steps">
-      <h3 style="color: var(--accent); margin-bottom: 15px;">วิธีการโดเนท:</h3>
-      
-      <div class="step">
-        <div class="step-number">1</div>
-        <div class="step-content">
-          เปิดแอพ TrueMoney Wallet และสร้างอั่งเปา
-        </div>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">2</div>
-        <div class="step-content">
-          คัดลอกลิงก์อั่งเปาและวางในช่องด้านบน
-        </div>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">3</div>
-        <div class="step-content">
-          กดปุ่ม "ดำเนินการ" เพื่อเปลี่ยนเบอร์ผู้รับเป็น 092-647-9499
-        </div>
-      </div>
-      
-      <div class="step">
-        <div class="step-number">4</div>
-        <div class="step-content">
-          กดปุ่ม "เปิดลิงก์" เพื่อดำเนินการโดเนท
-        </div>
-      </div>
-    </div>
-    
-    <div class="footer">
-      &copy; 2025 BLACK OUT SCRIPTS. รับเงินโดเนทอัตโนมัติเข้าเบอร์ 092-647-9499
-    </div>
+
+  <h1>🔍 Roblox Profile Viewer</h1>
+  <input type="text" id="usernameInput" placeholder="Enter Roblox username">
+  <button onclick="fetchRobloxData()">Search</button>
+
+  <div class="profile" id="profile">
+    <!-- Info will be displayed here -->
   </div>
-  
+
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const processBtn = document.getElementById('process-btn');
-      const angpaoLinkInput = document.getElementById('angpao-link');
-      const resultContainer = document.getElementById('result-container');
-      const resultLink = document.getElementById('result-link');
-      const copyBtn = document.getElementById('copy-btn');
-      const openBtn = document.getElementById('open-btn');
-      const statusMessage = document.getElementById('status-message');
-      const loading = document.querySelector('.loading');
-      
-      let modifiedLink = '';
-      
-      // เมื่อกดปุ่มดำเนินการ
-      processBtn.addEventListener('click', function() {
-        const originalLink = angpaoLinkInput.value.trim();
-        
-        if (!originalLink) {
-          showStatus('กรุณาวางลิงก์อั่งเปาทรูมันนี่', 'error');
-          return;
-        }
-        
-        // แสดงการโหลด
-        loading.style.display = 'block';
-        statusMessage.style.display = 'none';
-        resultContainer.style.display = 'none';
-        
-        // จำลองการประมวลผล
-        setTimeout(function() {
-          loading.style.display = 'none';
-          
-          // ตรวจสอบว่าเป็นลิงก์อั่งเปาหรือไม่
-          if (!originalLink.includes('gift.truemoney.com')) {
-            showStatus('ลิงก์ไม่ถูกต้อง กรุณาวางลิงก์อั่งเปาทรูมันนี่', 'error');
-            return;
-          }
-          
-          // แปลงลิงก์ให้เงินเข้าเบอร์ที่กำหนด
-          modifiedLink = modifyLink(originalLink, '0926479499');
-          
-          // แสดงผลลัพธ์
-          resultLink.textContent = modifiedLink;
-          resultContainer.style.display = 'block';
-          
-          showStatus('ลิงก์พร้อมใช้งานแล้ว! กดปุ่ม "เปิดลิงก์" เพื่อดำเนินการต่อ', 'success');
-        }, 1500);
+    async function fetchRobloxData() {
+      const username = document.getElementById("usernameInput").value.trim();
+      const profileDiv = document.getElementById("profile");
+
+      if (!username) return alert("Please enter a username.");
+
+      // Step 1: Get userId from username
+      const res1 = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [username] })
       });
-      
-      // ฟังก์ชันสำหรับแปลงลิงก์
-      function modifyLink(link, phoneNumber) {
-        // ตรวจสอบว่ามี mobile= อยู่ในลิงก์หรือไม่
-        if (link.includes('mobile=')) {
-          // ถ้ามีแล้ว ให้แทนที่ด้วยเบอร์ใหม่
-          return link.replace(/mobile=[0-9]+/, `mobile=${phoneNumber}`);
-        } else {
-          // ถ้าไม่มี ให้เพิ่มเข้าไป
-          if (link.includes('?')) {
-            // ถ้ามี ? อยู่แล้ว ให้เพิ่ม & ต่อท้าย
-            return `${link}&mobile=${phoneNumber}`;
-          } else {
-            // ถ้าไม่มี ? ให้เพิ่ม ? นำหน้า
-            return `${link}?mobile=${phoneNumber}`;
-          }
-        }
+      const data1 = await res1.json();
+
+      if (!data1.data || data1.data.length === 0) {
+        profileDiv.innerHTML = `<p>User not found</p>`;
+        return;
       }
-      
-      // ฟังก์ชันแสดงสถานะ
-      function showStatus(message, type) {
-        statusMessage.textContent = message;
-        statusMessage.className = 'status';
-        statusMessage.classList.add(type);
-        statusMessage.style.display = 'block';
-      }
-      
-      // ปุ่มคัดลอกลิงก์
-      copyBtn.addEventListener('click', function() {
-        navigator.clipboard.writeText(modifiedLink).then(function() {
-          copyBtn.textContent = '✓ คัดลอกแล้ว';
-          setTimeout(function() {
-            copyBtn.innerHTML = '<i class="fas fa-copy icon"></i>คัดลอกลิงก์';
-          }, 2000);
-        });
-      });
-      
-      // ปุ่มเปิดลิงก์
-      openBtn.addEventListener('click', function() {
-        if (modifiedLink) {
-          window.open(modifiedLink, '_blank');
-        }
-      });
-    });
+
+      const userId = data1.data[0].id;
+
+      // Step 2: Get user profile
+      const res2 = await fetch(`https://users.roblox.com/v1/users/${userId}`);
+      const userData = await res2.json();
+
+      // Step 3: Get avatar thumbnail
+      const res3 = await fetch(`https://thumbnails.roblox.com/v1/users/avatar?userIds=${userId}&size=150x150&format=Png&isCircular=false`);
+      const avatarData = await res3.json();
+      const avatarUrl = avatarData.data[0].imageUrl;
+
+      profileDiv.innerHTML = `
+        <img class="avatar" src="${avatarUrl}">
+        <h2>${userData.name}</h2>
+        <p><strong>Display Name:</strong> ${userData.displayName}</p>
+        <p><strong>User ID:</strong> ${userId}</p>
+        <p><strong>Description:</strong> ${userData.description || 'N/A'}</p>
+      `;
+    }
   </script>
 </body>
 </html>
