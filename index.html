@@ -1,453 +1,660 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOGHUB - Next Generation Web</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <title>Key Management Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
-        :root {
-            --primary: #00ff87;
-            --secondary: #60efff;
-            --dark: #0a0a0a;
-            --purple: #1000eb;
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: 'Space Grotesk', sans-serif;
-            background: var(--dark);
-            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            overflow-x: hidden;
+            color: #333;
         }
-        
-        /* Animated Background */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: linear-gradient(45deg, #0a0a0a, #1a1a2e);
-        }
-        
-        .bg-animation::before, .bg-animation::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(96,239,255,0.3) 0%, transparent 70%);
-            animation: float 15s ease-in-out infinite;
-        }
-        
-        .bg-animation::before {
-            top: 20%;
-            left: 10%;
-            animation-delay: -5s;
-        }
-        
-        .bg-animation::after {
-            bottom: 20%;
-            right: 10%;
-            background: radial-gradient(circle, rgba(176,38,255,0.3) 0%, transparent 70%);
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(30px, -30px); }
-        }
-        
-        /* Particles */
-        .particle {
-            position: absolute;
-            width: 2px;
-            height: 2px;
-            background: var(--primary);
-            opacity: 0.6;
-            animation: particle-move 10s linear infinite;
-        }
-        
-        @keyframes particle-move {
-            0% { transform: translateY(100vh) scale(0); }
-            100% { transform: translateY(-100px) scale(1); }
-        }
-        
-        /* Container */
+
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 20px;
         }
-        
-        /* Header */
+
         .header {
-            text-align: center;
-            margin-bottom: 4rem;
-            padding: 4rem 0;
-            position: relative;
-        }
-        
-        .logo {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 6rem;
-            font-weight: 700;
-            text-align: center;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(0,255,135,0.3);
-            animation: glow 2s ease-in-out infinite alternate;
-            letter-spacing: -5px;
-        }
-        
-        @keyframes glow {
-            from { text-shadow: 0 0 30px rgba(0,255,135,0.3); }
-            to { text-shadow: 0 0 60px rgba(0,255,135,0.8); }
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: var(--secondary);
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            margin-top: 1rem;
-            animation: neon-blink 2s infinite;
-        }
-        
-        @keyframes neon-blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-        
-        /* Main Content */
-        .main-content {
-            background: rgba(26, 26, 46, 0.8);
-            border: 1px solid rgba(96, 239, 255, 0.3);
-            border-radius: 20px;
-            padding: 3rem;
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
-            box-shadow: 0 8px 32px rgba(0,255,135,0.1);
-            position: relative;
-            overflow: hidden;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
-        .main-content::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(176,38,255,0.1) 0%, transparent 50%);
-            animation: rotate 30s linear infinite;
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .content-inner {
-            position: relative;
-            z-index: 1;
-        }
-        
-        h2 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 1.5rem;
-            position: relative;
-            display: inline-block;
-        }
-        
-        h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, var(--primary), transparent);
-            animation: slide-right 3s ease-in-out infinite;
-        }
-        
-        @keyframes slide-right {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(0); }
-        }
-        
-        p {
-            font-size: 1.1rem;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
-            color: #a0a0a0;
-        }
-        
-        /* Highlight Box */
-        .highlight-box {
-            background: linear-gradient(45deg, rgba(176,38,255,0.3), rgba(96,239,255,0.3));
-            border: 1px solid var(--primary);
-            padding: 2rem;
-            border-radius: 15px;
-            margin: 2rem 0;
-            position: relative;
-            overflow: hidden;
-            transform: perspective(1000px) rotateY(2deg);
-            transition: all 0.3s ease;
-        }
-        
-        .highlight-box:hover {
-            transform: perspective(1000px) rotateY(0deg);
-            box-shadow: 0 0 30px rgba(0,255,135,0.3);
-        }
-        
-        .highlight-box::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 50%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(0.8); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-        }
-        
-        .bold-text {
-            color: var(--primary);
-            font-weight: 700;
-            background: rgba(0,255,135,0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 5px;
-            text-shadow: 0 0 10px rgba(0,255,135,0.5);
-        }
-        
-        /* Note Section */
-        .note {
-            background: rgba(0,255,135,0.05);
-            border-left: 3px solid var(--primary);
-            padding: 1.5rem;
-            margin-top: 3rem;
-            border-radius: 0 10px 10px 0;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .note::after {
-            content: 'DEV MODE';
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: var(--primary);
-            font-size: 0.8rem;
-            letter-spacing: 2px;
-            opacity: 0.3;
-        }
-        
-        /* Glitch Effect */
-        .glitch {
-            position: relative;
+
+        .header h1 {
             color: white;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            animation: glitch 8s infinite;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        
-        .glitch::before,
-        .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
         }
-        
-        .glitch::before {
-            animation: glitch2 0.3s infinite linear alternate-reverse;
-            color: #ff0000;
-            z-index: -1;
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
-        
-        .glitch::after {
-            animation: glitch3 0.3s infinite linear alternate-reverse;
-            color: #00ff00;
-            z-index: -2;
-        }
-        
-        @keyframes glitch {
-            2%,64%{ transform: translate(2px,0) skew(0deg); }
-            4%,60%{ transform: translate(-2px,0) skew(0deg); }
-            62%{ transform: translate(0,0) skew(5deg); }
-        }
-        
-        @keyframes glitch2 {
-            0%{ clip-path: inset(31% 0 38% 0); }
-            10%{ clip-path: inset(0 0 90% 0); }
-            20%{ clip-path: inset(40% 0 59% 0); }
-            90%{ clip-path: inset(0 0 40% 0); }
-            100%{ clip-path: inset(0 0 90% 0); }
-        }
-        
-        @keyframes glitch3 {
-            0%{ clip-path: inset(65% 0 34% 0); }
-            10%{ clip-path: inset(10% 0 87% 0); }
-            20%{ clip-path: inset(0 0 40% 0); }
-            90%{ clip-path: inset(64% 0 35% 0); }
-            100%{ clip-path: inset(10% 0 87% 0); }
-        }
-        
-        /* Neon Button */
-        .neon-button {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            padding: 1rem 2rem;
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
         }
-        
-        .neon-button:hover {
-            color: var(--dark);
-            text-shadow: none;
-            box-shadow: 0 0 30px var(--primary);
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
         }
-        
-        .neon-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 0;
-            height: 100%;
-            background: var(--primary);
-            transition: width 0.3s ease;
-            z-index: -1;
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
         }
-        
-        .neon-button:hover::before {
-            width: 100%;
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
-        
-        .footer-text {
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .management-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .panel h3 {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .user-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
             text-align: center;
-            margin-top: 4rem;
-            font-family: 'Orbitron', sans-serif;
-            color: var(--primary);
-            opacity: 0.5;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        .activity-feed {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .activity-time {
+            font-size: 0.85rem;
+            color: #666;
+            min-width: 80px;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #007bff;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid,
+            .management-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-animation"></div>
-    
     <div class="container">
+        <!-- Header -->
         <div class="header">
-            <h1 class="logo">DOGHUB</h1>
-            <p class="subtitle glitch" data-text="Reason why you should unban me">Reason why you should unban me</p>
+            <h1>
+                🔐 Key Management Dashboard
+                <span class="loading" id="loadingSpinner" style="display: none;"></span>
+            </h1>
+            <p>Real-time monitoring และจัดการ Key System</p>
         </div>
-    
-        <div class="main-content">
-            <div class="content-inner">
-                <h2>What is DOGHUB?</h2>
-                
-                <p>
-                    DOGHUB is a cutting-edge web development project I'm currently building 
-                    as part of my journey into the future of web technologies.
-                </p>
-                
-                <div class="highlight-box">
-                    <h2>Important Message</h2>
-                    <p>
-                        I myself DOGHUB, I'm already practicing Web development, so why would you ban me in 
-                        <span class="bold-text">Hekmatyar</span>?
-                    </p>
-                </div>
-                
-                <div class="note">
-                    <p><strong>Note:</strong> Subject: Appeal for Ban Reconsideration and Clarification
 
-                        Dear Hekmatyar Administration,
-                        
-                        I hope this message finds you well.
-                        
-                        I am writing to formally introduce DOGHUB, a web development project I am currently working on as part of my personal learning journey to enhance my skills in HTML and CSS. Please note that the DOGHUB website is solely for educational and non-commercial purposes.
-                        
-                        I would also like to address a recent matter regarding my account’s ban from Hekmatyar. I was deeply surprised and disappointed to find myself banned without prior warning or clear communication. I believe this action may have been taken based on a misunderstanding, and I kindly request a reconsideration of the decision.
-                        
-                        To clarify, I am not engaging in any form of cheating. I was simply enjoying the game with a friend, "Dieinvincible," and experimenting within the bounds of normal gameplay. Specifically, it has been suggested by a staff member, Mr. [PP STAFF] Fausties, that I was attempting to force Roblox to create a new server by blocking other players in-game and leaving the server I joined. I want to make it clear that this action was not intended to avoid facing or encountering staff members, but rather to join a different server where I could play with my friend.
-                        
-                        I respectfully disagree with the interpretation that this behavior constitutes cheating, for the following reasons:
-                        
-                        Lack of Evidence: No evidence has been presented to me to support the claim that I violated any rules or terms.
-                        
-                        Roblox Terms of Service: I have reviewed the Roblox Terms of Service and could not find any clause explicitly prohibiting such behavior.
-                        
-                        Game-Specific Rules: While Hekmatyar's guidelines under “In-Game Guidelines II. Bug Abuse” prohibit actions such as item duplication, forcefield abuse, and physics manipulation, I acknowledge that I may have unintentionally triggered a bug. However, this was my first offense, and I believe a warning would have been a more appropriate response rather than an immediate ban.
-                        
-                        Lack of Due Process: I was not contacted, warned, or given the opportunity to explain myself before the ban was enacted. Such administrative action without dialogue could be perceived as an abuse of authority.
-                        
-                        My intention was never to disrupt gameplay or gain unfair advantage. My friend and I are loyal fans of Hekmatyar, and we transitioned from another game (Blackout) due to its lack of content and staff engagement. We genuinely appreciate the community and the creativity within Hekmatyar, which is why this situation is particularly disheartening.
-                        
-                        Therefore, I respectfully request that you reconsider my ban and, if possible, provide an opportunity for further discussion. I am more than willing to cooperate fully with the staff and ensure compliance with all game rules moving forward.
-                        
-                        Thank you for taking the time to read this message. I truly enjoy Hekmatyar and would be grateful for the chance to return to the community.
-                        
-                        Sincerely,
-                        munichop78
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🔑</div>
+                <div class="stat-number" id="totalKeys">156</div>
+                <div class="stat-label">Total Keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-number" id="activeKeys">142</div>
+                <div class="stat-label">Active Keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number" id="totalUsers">89</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-number" id="todayUsage">247</div>
+                <div class="stat-label">Today's Usage</div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 การใช้งาน Key รายวัน (7 วันที่ผ่านมา)</div>
+                <canvas id="dailyUsageChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">🥇 Top Users</div>
+                <canvas id="topUsersChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Management Section -->
+        <div class="management-section">
+            <div class="panel">
+                <h3>👨‍💼 User Management</h3>
+                <div class="user-list" id="userList">
+                    <!-- Users will be loaded here -->
                 </div>
-                
-                <div style="text-align: center; margin-top: 3rem;">
-                    <button class="neon-button" onclick="window.location.href='https://www.roblox.com/users/3610964183/profile'">Pls unban me now (Click Here @Admin Hekmatyar) </button>
+                <button class="btn btn-primary" onclick="showAllUsers()">View All Users</button>
+            </div>
+            <div class="panel">
+                <h3>🔧 Quick Actions</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" onclick="generateNewKey()">🆕 Generate New Key</button>
+                    <button class="btn btn-primary" onclick="exportData()">📁 Export Data</button>
+                    <button class="btn btn-danger" onclick="cleanupExpired()">🗑️ Cleanup Expired Keys</button>
                 </div>
             </div>
         </div>
-        
-        <p class="footer-text">Specifically, it has been suggested by a staff member, Mr. [PP STAFF] Fausties, that I was attempting to force Roblox to create a new server by blocking other players in-game and leaving the server I joined. I want to clarify that this action was not intended to avoid encountering staff members, but rather to join a different server where I could play with my friend.</p>
+
+        <!-- Activity Feed -->
+        <div class="activity-feed">
+            <h3>📝 Recent Activity</h3>
+            <div id="activityFeed">
+                <!-- Activity items will be loaded here -->
+            </div>
+        </div>
     </div>
-    
+
+    <!-- Refresh Button -->
+    <button class="refresh-btn" onclick="refreshData()" title="Refresh Data">
+        🔄
+    </button>
+
     <script>
-        // Create particles
-        for(let i = 0; i < 50; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + 'vw';
-            particle.style.animationDelay = Math.random() * 10 + 's';
-            particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
-            document.querySelector('.bg-animation').appendChild(particle);
-        }
-        
-        // Glitch text effect
-        const glitchElements = document.querySelectorAll('.glitch');
-        glitchElements.forEach(el => {
-            setInterval(() => {
-                if(Math.random() > 0.7) {
-                    el.classList.add('glitching');
-                    setTimeout(() => {
-                        el.classList.remove('glitching');
-                    }, 200);
+        // Sample data - ในการใช้งานจริงจะดึงจาก API
+        const sampleData = {
+            stats: {
+                totalKeys: 156,
+                activeKeys: 142,
+                totalUsers: 89,
+                todayUsage: 247
+            },
+            dailyUsage: [120, 135, 180, 165, 190, 220, 247],
+            labels: ['6 วันที่แล้ว', '5 วันที่แล้ว', '4 วันที่แล้ว', '3 วันที่แล้ว', '2 วันที่แล้ว', 'เมื่อวาน', 'วันนี้'],
+            topUsers: [
+                { name: 'User#1234', usage: 45 },
+                { name: 'User#5678', usage: 38 },
+                { name: 'User#9012', usage: 32 },
+                { name: 'User#3456', usage: 28 },
+                { name: 'User#7890', usage: 25 }
+            ],
+            users: [
+                { id: '1234', name: 'AdminUser#1234', status: 'active', keys: 3, lastSeen: '2 นาทีที่แล้ว' },
+                { id: '5678', name: 'PowerUser#5678', status: 'active', keys: 2, lastSeen: '15 นาทีที่แล้ว' },
+                { id: '9012', name: 'TestUser#9012', status: 'expired', keys: 1, lastSeen: '2 ชั่วโมงที่แล้ว' },
+                { id: '3456', name: 'NewUser#3456', status: 'pending', keys: 1, lastSeen: '1 วันที่แล้ว' },
+                { id: '7890', name: 'VIPUser#7890', status: 'active', keys: 5, lastSeen: '30 นาทีที่แล้ว' }
+            ],
+            activities: [
+                { time: '14:32', action: 'User#1234 used key BQ27-FK38-MZN2', type: 'usage' },
+                { time: '14:28', action: 'New key generated: XK19-JL83-YTU9', type: 'generate' },
+                { time: '14:15', action: 'User#5678 reset HWID for key MA47-KX28-CPQ1', type: 'reset' },
+                { time: '13:45', action: 'Admin exported user data', type: 'export' },
+                { time: '13:20', action: 'User#9012 key expired', type: 'expire' }
+            ]
+        };
+
+        // Initialize Charts
+        function initCharts() {
+            // Daily Usage Chart
+            const dailyCtx = document.getElementById('dailyUsageChart').getContext('2d');
+            new Chart(dailyCtx, {
+                type: 'line',
+                data: {
+                    labels: sampleData.labels,
+                    datasets: [{
+                        label: 'การใช้งาน Key',
+                        data: sampleData.dailyUsage,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
                 }
-            }, 2000);
+            });
+
+            // Top Users Chart
+            const topUsersCtx = document.getElementById('topUsersChart').getContext('2d');
+            new Chart(topUsersCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: sampleData.topUsers.map(user => user.name),
+                    datasets: [{
+                        data: sampleData.topUsers.map(user => user.usage),
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load user list
+        function loadUsers() {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+
+            sampleData.users.slice(0, 5).forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">${user.name.charAt(0)}</div>
+                        <div>
+                            <div style="font-weight: bold;">${user.name}</div>
+                            <div style="font-size: 0.85rem; color: #666;">${user.keys} keys • ${user.lastSeen}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="status ${user.status}">${getStatusText(user.status)}</span>
+                        <button class="btn btn-danger btn-small" onclick="manageUser('${user.id}')">จัดการ</button>
+                    </div>
+                `;
+                userList.appendChild(userItem);
+            });
+        }
+
+        // Load activity feed
+        function loadActivities() {
+            const activityFeed = document.getElementById('activityFeed');
+            activityFeed.innerHTML = '';
+
+            sampleData.activities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                activityItem.innerHTML = `
+                    <div class="activity-time">${activity.time}</div>
+                    <div>${activity.action}</div>
+                `;
+                activityFeed.appendChild(activityItem);
+            });
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalKeys').textContent = sampleData.stats.totalKeys;
+            document.getElementById('activeKeys').textContent = sampleData.stats.activeKeys;
+            document.getElementById('totalUsers').textContent = sampleData.stats.totalUsers;
+            document.getElementById('todayUsage').textContent = sampleData.stats.todayUsage;
+        }
+
+        // Helper functions
+        function getStatusText(status) {
+            switch(status) {
+                case 'active': return 'Active';
+                case 'expired': return 'Expired';
+                case 'pending': return 'Pending';
+                default: return 'Unknown';
+            }
+        }
+
+        // Action functions
+        function refreshData() {
+            const spinner = document.getElementById('loadingSpinner');
+            const refreshBtn = document.querySelector('.refresh-btn');
+            
+            spinner.style.display = 'inline-block';
+            refreshBtn.style.transform = 'scale(1.1) rotate(360deg)';
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Update with new data (in real app, fetch from API)
+                sampleData.stats.todayUsage += Math.floor(Math.random() * 10);
+                sampleData.dailyUsage[6] = sampleData.stats.todayUsage;
+                
+                updateStats();
+                loadUsers();
+                loadActivities();
+                
+                spinner.style.display = 'none';
+                refreshBtn.style.transform = '';
+                
+                // Show success animation
+                document.body.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+                setTimeout(() => {
+                    document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                }, 500);
+            }, 1500);
+        }
+
+        function generateNewKey() {
+            const keys = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'];
+            let newKey = '';
+            for (let i = 0; i < 3; i++) {
+                if (i > 0) newKey += '-';
+                for (let j = 0; j < 4; j++) {
+                    newKey += keys[0].charAt(Math.floor(Math.random() * keys[0].length));
+                }
+            }
+            alert(`🔑 New Key Generated: ${newKey}\n\nKey has been added to the system!`);
+            
+            // Update stats
+            sampleData.stats.totalKeys++;
+            sampleData.stats.activeKeys++;
+            updateStats();
+        }
+
+        function exportData() {
+            const data = JSON.stringify(sampleData, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `key-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('📁 Data exported successfully!');
+        }
+
+        function cleanupExpired() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะลบ Key ที่หมดอายุทั้งหมด?')) {
+                const expiredCount = sampleData.stats.totalKeys - sampleData.stats.activeKeys;
+                sampleData.stats.totalKeys = sampleData.stats.activeKeys;
+                updateStats();
+                alert(`🗑️ ลบ Key ที่หมดอายุแล้ว ${expiredCount} key(s)`);
+            }
+        }
+
+        function showAllUsers() {
+            alert('🔄 Redirecting to full user management page...');
+        }
+
+        function manageUser(userId) {
+            const user = sampleData.users.find(u => u.id === userId);
+            if (user) {
+                alert(`👨‍💼 Managing user: ${user.name}\n\nActions available:\n- View details\n- Reset HWID\n- Ban/Unban\n- View usage history`);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            initCharts();
+            loadUsers();
+            loadActivities();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                // Simulate real-time updates
+                if (Math.random() > 0.7) {
+                    sampleData.stats.todayUsage++;
+                    updateStats();
+                    
+                    // Add pulse effect to today's usage
+                    const todayUsageEl = document.getElementById('todayUsage');
+                    todayUsageEl.classList.add('pulse');
+                    setTimeout(() => todayUsageEl.classList.remove('pulse'), 2000);
+                }
+            }, 30000);
         });
     </script>
 </body>
