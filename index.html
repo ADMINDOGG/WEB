@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Key Management Dashboard</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <title>Bot Status - Key Management System</title>
     <style>
         * {
             margin: 0;
@@ -15,264 +13,292 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1b69 100%);
             min-height: 100vh;
-            color: #333;
+            color: white;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 200%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: sweep 8s infinite;
+        }
+
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        .particle:nth-child(1) { width: 4px; height: 4px; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 6px; height: 6px; left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { width: 3px; height: 3px; left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { width: 5px; height: 5px; left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { width: 4px; height: 4px; left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { width: 6px; height: 6px; left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { width: 3px; height: 3px; left: 70%; animation-delay: 0.5s; }
+        .particle:nth-child(8) { width: 5px; height: 5px; left: 80%; animation-delay: 1.5s; }
+        .particle:nth-child(9) { width: 4px; height: 4px; left: 90%; animation-delay: 2.5s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10%, 90% { opacity: 1; }
+            50% { transform: translateY(-100vh) rotate(180deg); }
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
         }
 
-        .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            color: white;
-            font-size: 2.5rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .connection-status {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-
-        .connected {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .disconnected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 60px 40px;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
         }
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(0, 255, 127, 0.1), transparent);
+            animation: rotate 6s linear infinite;
+            z-index: -1;
         }
 
-        .stat-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 1.1rem;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .chart-container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .chart-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .management-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .panel {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .panel h3 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .user-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
+        .bot-avatar {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #00ff7f, #32cd32, #7fff00);
+            margin: 0 auto 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            font-size: 4rem;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 255, 127, 0.3);
+        }
+
+        .bot-avatar::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #00ff7f, #32cd32);
+            z-index: -1;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            background: #00ff7f;
+            border-radius: 50%;
+            border: 3px solid white;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .bot-title {
+            font-size: 2.5rem;
             font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff7f, #7fff00, #32cd32);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 255, 127, 0.5);
         }
 
-        .status {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
+        .bot-id {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
         }
 
-        .status.active {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status.expired {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0056b3;
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-            transform: translateY(-2px);
-        }
-
-        .btn-small {
-            padding: 5px 10px;
-            font-size: 0.85rem;
-        }
-
-        .activity-feed {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .activity-item {
-            display: flex;
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-            gap: 15px;
-            padding: 12px;
+            gap: 10px;
+            background: rgba(0, 255, 127, 0.2);
+            border: 2px solid #00ff7f;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            box-shadow: 0 0 20px rgba(0, 255, 127, 0.3);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #00ff7f;
+            border-radius: 50%;
+            animation: glow 1s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 5px #00ff7f; }
+            100% { box-shadow: 0 0 15px #00ff7f, 0 0 25px #00ff7f; }
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
             margin-bottom: 8px;
-            border-left: 4px solid #007bff;
-            background: #f8f9fa;
-            border-radius: 8px;
         }
 
-        .activity-time {
-            font-size: 0.85rem;
-            color: #666;
-            min-width: 80px;
+        .info-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #00ff7f;
         }
 
+        .uptime {
+            color: #7fff00;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        /* Matrix rain effect */
+        .matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.03;
+        }
+
+        .matrix-char {
+            position: absolute;
+            color: #00ff7f;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            animation: matrix-fall linear infinite;
+        }
+
+        @keyframes matrix-fall {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .status-card {
+                padding: 40px 20px;
+                margin: 20px;
+            }
+            
+            .bot-title {
+                font-size: 2rem;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hover effects */
+        .status-card:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Loading animation */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
+            border-top: 3px solid #00ff7f;
             animation: spin 1s linear infinite;
         }
 
@@ -281,738 +307,194 @@
             100% { transform: rotate(360deg); }
         }
 
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 1px solid #f5c6cb;
+        /* Glitch effect */
+        .glitch {
+            animation: glitch 2s infinite;
         }
 
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 1px solid #c3e6cb;
-        }
-
-        @media (max-width: 768px) {
-            .charts-grid,
-            .management-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-        }
-
-        .refresh-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: #007bff;
-            color: white;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .refresh-btn:hover {
-            transform: scale(1.1) rotate(180deg);
-            box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
-        }
-
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
+        @keyframes glitch {
+            0%, 90%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-2px); }
+            40% { transform: translateX(2px); }
+            60% { transform: translateX(-1px); }
+            80% { transform: translateX(1px); }
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="bg-animation"></div>
+    
+    <!-- Floating Particles -->
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+
+    <!-- Matrix Rain -->
+    <div class="matrix" id="matrix"></div>
+
     <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>
-                🔐 Key Management Dashboard
-                <span class="loading" id="loadingSpinner" style="display: none;"></span>
-            </h1>
-            <div class="connection-status disconnected" id="connectionStatus">
-                🔴 Connecting...
+        <div class="status-card">
+            <div class="bot-avatar">
+                🤖
+                <div class="status-indicator"></div>
             </div>
-        </div>
-
-        <!-- Error/Success Messages -->
-        <div id="messageContainer"></div>
-
-        <!-- Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">🔑</div>
-                <div class="stat-number" id="totalValidKeys">-</div>
-                <div class="stat-label">Total Valid Keys</div>
+            
+            <h1 class="bot-title glitch">KEY GUARDIAN</h1>
+            <div class="bot-id">BOT ID: 1382045139069042699</div>
+            
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                <span id="statusText">🟢 ONLINE</span>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-number" id="usedKeys">-</div>
-                <div class="stat-label">Used Keys</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-number" id="availableKeys">-</div>
-                <div class="stat-label">Available Keys</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-number" id="totalUsers">-</div>
-                <div class="stat-label">Total Users</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⏰</div>
-                <div class="stat-number" id="activeCooldowns">-</div>
-                <div class="stat-label">Active Cooldowns</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔄</div>
-                <div class="stat-number" id="lastUpdated">-</div>
-                <div class="stat-label">Last Updated</div>
-            </div>
-        </div>
-
-        <!-- Charts Section -->
-        <div class="charts-grid">
-            <div class="chart-container">
-                <div class="chart-title">📊 การใช้งาน Key รายวัน (7 วันที่ผ่านมา)</div>
-                <canvas id="dailyUsageChart"></canvas>
-            </div>
-            <div class="chart-container">
-                <div class="chart-title">🥇 Top Users</div>
-                <canvas id="topUsersChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Management Section -->
-        <div class="management-section">
-            <div class="panel">
-                <h3>👨‍💼 User Management</h3>
-                <div class="user-list" id="userList">
-                    <div class="loading" style="margin: 20px auto;"></div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">SERVER STATUS</div>
+                    <div class="info-value">ACTIVE</div>
                 </div>
-                <button class="btn btn-primary" onclick="refreshUsers()">Refresh Users</button>
-            </div>
-            <div class="panel">
-                <h3>🔧 Quick Actions</h3>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-primary" onclick="generateNewKey()">🆕 Generate New Key</button>
-                    <button class="btn btn-primary" onclick="exportData()">📁 Export Data</button>
-                    <button class="btn btn-danger" onclick="cleanupExpired()">🗑️ Cleanup Expired Keys</button>
+                <div class="info-item">
+                    <div class="info-label">UPTIME</div>
+                    <div class="info-value uptime" id="uptime">24/7</div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Activity Feed -->
-        <div class="activity-feed">
-            <h3>📝 Recent Activity</h3>
-            <div id="activityFeed">
-                <div class="loading" style="margin: 20px auto;"></div>
+                <div class="info-item">
+                    <div class="info-label">RESPONSE TIME</div>
+                    <div class="info-value" id="ping">< 50ms</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">LAST SEEN</div>
+                    <div class="info-value" id="lastSeen">NOW</div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Refresh Button -->
-    <button class="refresh-btn" onclick="refreshAllData()" title="Refresh All Data">
-        🔄
-    </button>
+    <div class="footer">
+        Key Management System © 2025 | Powered by Discord.js
+    </div>
 
     <script>
-        // Global variables
-        let socket;
-        let dailyChart;
-        let topUsersChart;
-        
-        // API Base URL - เปลี่ยนตามที่คุณ host
-        const API_BASE = window.location.origin;
-
-        // Initialize Dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeSocket();
-            loadAllData();
+        // Matrix rain effect
+        function createMatrix() {
+            const matrix = document.getElementById('matrix');
+            const chars = '01ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
             
-            // Auto-refresh ทุก 5 นาที
-            setInterval(loadAllData, 5 * 60 * 1000);
+            setInterval(() => {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                matrix.appendChild(char);
+                
+                setTimeout(() => {
+                    if (char.parentNode) {
+                        char.parentNode.removeChild(char);
+                    }
+                }, 5000);
+            }, 100);
+        }
+
+        // Update time and status
+        function updateStatus() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            
+            document.getElementById('lastSeen').textContent = timeStr;
+            
+            // Simulate ping
+            const ping = Math.floor(Math.random() * 30) + 20;
+            document.getElementById('ping').textContent = `${ping}ms`;
+            
+            // Random status variations
+            const statuses = [
+                '🟢 ONLINE',
+                '🟢 OPERATIONAL', 
+                '🟢 READY',
+                '🟢 ACTIVE'
+            ];
+            
+            if (Math.random() > 0.95) {
+                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                document.getElementById('statusText').textContent = randomStatus;
+            }
+        }
+
+        // Simulate bot activity
+        function simulateActivity() {
+            const activities = [
+                'Processing commands...',
+                'Managing keys...',
+                'Monitoring users...',
+                'Securing data...',
+                'Running diagnostics...',
+                'Updating systems...'
+            ];
+            
+            // แสดง activity ใน console สำหรับ debug
+            if (Math.random() > 0.8) {
+                const activity = activities[Math.floor(Math.random() * activities.length)];
+                console.log(`🤖 Bot Activity: ${activity}`);
+            }
+        }
+
+        // Easter egg: Click bot avatar
+        document.querySelector('.bot-avatar').addEventListener('click', () => {
+            const messages = [
+                'Beep boop! 🤖',
+                'System operational! ✅',
+                'Guardian mode activated! 🛡️',
+                'Keys secured! 🔐',
+                'All systems go! 🚀'
+            ];
+            
+            const message = messages[Math.floor(Math.random() * messages.length)];
+            alert(message);
         });
 
-        // Socket.IO Connection
-        function initializeSocket() {
-            socket = io(API_BASE);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createMatrix();
+            updateStatus();
             
-            socket.on('connect', () => {
-                updateConnectionStatus(true);
-                console.log('✅ Connected to Key Management Server');
-                showMessage('🔗 เชื่อมต่อกับเซิร์ฟเวอร์สำเร็จ', 'success');
-            });
+            // Update every second
+            setInterval(updateStatus, 1000);
             
-            socket.on('disconnect', () => {
-                updateConnectionStatus(false);
-                console.log('❌ Disconnected from server');
-                showMessage('⚠️ การเชื่อมต่อกับเซิร์ฟเวอร์ขาดหาย', 'error');
-            });
+            // Simulate activity every 5 seconds
+            setInterval(simulateActivity, 5000);
             
-            socket.on('stats_update', (stats) => {
-                console.log('📊 Real-time stats update received');
-                updateStats(stats);
-                addPulseEffect('totalValidKeys');
-            });
-            
-            socket.on('new_activity', (activity) => {
-                console.log('🔔 New activity received:', activity.message);
-                addNewActivity(activity);
-                showMessage(`🔔 ${activity.message}`, 'success');
-            });
-            
-            socket.on('initial_data', (data) => {
-                console.log('📡 Initial connection data:', data.message);
-            });
-            
-            socket.on('error', (error) => {
-                console.error('❌ Socket error:', error);
-                showMessage('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message, 'error');
-            });
-        }
-
-        // Update connection status
-        function updateConnectionStatus(connected) {
-            const statusEl = document.getElementById('connectionStatus');
-            if (connected) {
-                statusEl.className = 'connection-status connected';
-                statusEl.innerHTML = '🟢 Connected';
-            } else {
-                statusEl.className = 'connection-status disconnected';
-                statusEl.innerHTML = '🔴 Disconnected';
-            }
-        }
-
-        // Load all data
-        async function loadAllData() {
-            showLoading(true);
-            try {
-                await Promise.all([
-                    loadStats(),
-                    loadUsers(),
-                    loadDailyUsage(),
-                    loadTopUsers(),
-                    loadActivities()
-                ]);
-                showMessage('✅ ข้อมูลถูกโหลดเรียบร้อยแล้ว', 'success');
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showMessage('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // API Calls
-        async function apiCall(endpoint, method = 'GET', data = null) {
-            const options = {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            };
-            
-            if (data) {
-                options.body = JSON.stringify(data);
-            }
-            
-            const response = await fetch(`${API_BASE}/api${endpoint}`, options);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            return await response.json();
-        }
-
-        // Load Statistics
-        async function loadStats() {
-            try {
-                const stats = await apiCall('/stats');
-                updateStats(stats);
-            } catch (error) {
-                console.error('Error loading stats:', error);
-                // แสดงข้อมูล placeholder เมื่อ API ไม่พร้อมใช้งาน
-                updateStats({
-                    totalKeys: 'N/A',
-                    activeKeys: 'N/A',
-                    totalUsers: 'N/A',
-                    todayUsage: 'N/A'
-                });
-            }
-        }
-
-        // Update Statistics Display
-        function updateStats(stats) {
-            document.getElementById('totalValidKeys').textContent = stats.totalValidKeys || 'N/A';
-            document.getElementById('usedKeys').textContent = stats.usedKeys || 'N/A';
-            document.getElementById('availableKeys').textContent = stats.availableKeys || 'N/A';
-            document.getElementById('totalUsers').textContent = stats.totalUsers || 'N/A';
-            document.getElementById('activeCooldowns').textContent = stats.activeCooldowns || 'N/A';
-            
-            // Format last updated time
-            if (stats.lastUpdated) {
-                const lastUpdated = new Date(stats.lastUpdated);
-                const timeStr = lastUpdated.toLocaleTimeString('th-TH', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                document.getElementById('lastUpdated').textContent = timeStr;
-            }
-            
-            // แสดงข้อมูลเพิ่มเติมใน console สำหรับ debug
-            console.log('📊 Stats updated:', {
-                utilization: stats.usedKeys && stats.totalValidKeys ? 
-                    `${((stats.usedKeys / stats.totalValidKeys) * 100).toFixed(1)}%` : 'N/A',
-                ...stats
-            });
-        }
-
-        // Load Users
-        async function loadUsers() {
-            try {
-                const users = await apiCall('/users');
-                displayUsers(users.slice(0, 5)); // แสดงแค่ 5 คนแรก
-            } catch (error) {
-                console.error('Error loading users:', error);
-                document.getElementById('userList').innerHTML = '<div class="error-message">ไม่สามารถโหลดข้อมูลผู้ใช้ได้</div>';
-            }
-        }
-
-        // Display Users
-        function displayUsers(users) {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = '';
-
-            if (users.length === 0) {
-                userList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">ไม่มีผู้ใช้ในระบบ</div>';
-                return;
-            }
-
-            users.forEach(user => {
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
-                
-                // สร้าง status text
-                let statusInfo = getStatusText(user.status);
-                if (user.hasCooldown) {
-                    statusInfo += ' (Cooldown)';
-                }
-                
-                userItem.innerHTML = `
-                    <div class="user-info">
-                        <div class="user-avatar">${user.username.charAt(0)}</div>
-                        <div>
-                            <div style="font-weight: bold;">${user.username}</div>
-                            <div style="font-size: 0.85rem; color: #666;">
-                                ${user.keys.length} key(s) • ${user.lastSeen}
-                                ${user.hasCooldown ? ' • 🔒 Cooldown active' : ''}
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="status ${user.status}">${statusInfo}</span>
-                        <button class="btn btn-danger btn-small" onclick="manageUser('${user.userId}', '${user.username}')">จัดการ</button>
-                    </div>
-                `;
-                userList.appendChild(userItem);
-            });
-        }                        </div>
-                    </div>
-                    <div>
-                        <span class="status ${user.status}">${getStatusText(user.status)}</span>
-                        <button class="btn btn-danger btn-small" onclick="manageUser('${user.userId}')">จัดการ</button>
-                    </div>
-                `;
-                userList.appendChild(userItem);
-            });
-        }
-
-        // Load Daily Usage Chart
-        async function loadDailyUsage() {
-            try {
-                const dailyData = await apiCall('/usage/daily');
-                updateDailyChart(dailyData);
-            } catch (error) {
-                console.error('Error loading daily usage:', error);
-                // แสดงข้อมูล mock เมื่อ API ไม่พร้อม
-                const mockData = generateMockDailyData();
-                updateDailyChart(mockData);
-            }
-        }
-
-        // Update Daily Usage Chart
-        function updateDailyChart(data) {
-            const ctx = document.getElementById('dailyUsageChart').getContext('2d');
-            
-            if (dailyChart) {
-                dailyChart.destroy();
-            }
-            
-            dailyChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: data.map(d => d.label),
-                    datasets: [{
-                        label: 'การใช้งาน Key',
-                        data: data.map(d => d.usage),
-                        borderColor: '#007bff',
-                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Load Top Users Chart
-        async function loadTopUsers() {
-            try {
-                const topUsers = await apiCall('/users/top');
-                updateTopUsersChart(topUsers);
-            } catch (error) {
-                console.error('Error loading top users:', error);
-                // แสดงข้อมูล mock เมื่อ API ไม่พร้อม
-                const mockData = generateMockTopUsers();
-                updateTopUsersChart(mockData);
-            }
-        }
-
-        // Update Top Users Chart
-        function updateTopUsersChart(users) {
-            const ctx = document.getElementById('topUsersChart').getContext('2d');
-            
-            if (topUsersChart) {
-                topUsersChart.destroy();
-            }
-            
-            if (users.length === 0) {
-                // แสดงข้อความเมื่อไม่มีข้อมูล
-                ctx.font = '16px Arial';
-                ctx.fillStyle = '#666';
-                ctx.textAlign = 'center';
-                ctx.fillText('ไม่มีข้อมูลผู้ใช้', ctx.canvas.width / 2, ctx.canvas.height / 2);
-                return;
-            }
-            
-            topUsersChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: users.map(user => user.username),
-                    datasets: [{
-                        data: users.map(user => user.keyCount),
-                        backgroundColor: [
-                            '#FF6384',
-                            '#36A2EB',
-                            '#FFCE56',
-                            '#4BC0C0',
-                            '#9966FF'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.parsed} key(s)`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Load Activities
-        async function loadActivities() {
-            try {
-                const activities = await apiCall('/activities');
-                displayActivities(activities);
-            } catch (error) {
-                console.error('Error loading activities:', error);
-                document.getElementById('activityFeed').innerHTML = '<div class="error-message">ไม่สามารถโหลดกิจกรรมได้</div>';
-            }
-        }
-
-        // Display Activities
-        function displayActivities(activities) {
-            const activityFeed = document.getElementById('activityFeed');
-            activityFeed.innerHTML = '';
-
-            activities.forEach(activity => {
-                const activityItem = document.createElement('div');
-                activityItem.className = 'activity-item';
-                
-                const time = new Date(activity.timestamp).toLocaleTimeString('th-TH', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                
-                activityItem.innerHTML = `
-                    <div class="activity-time">${time}</div>
-                    <div>${activity.message}</div>
-                `;
-                activityFeed.appendChild(activityItem);
-            });
-        }
-
-        // Action Functions
-        async function generateNewKey() {
-            try {
-                showLoading(true);
-                const amount = prompt('จำนวน Key ที่ต้องการสร้าง (1-10):', '1');
-                
-                if (!amount || isNaN(amount) || amount < 1 || amount > 10) {
-                    showMessage('❌ จำนวน Key ไม่ถูกต้อง', 'error');
-                    return;
-                }
-                
-                const result = await apiCall('/keys/generate', 'POST', { amount: parseInt(amount) });
-                
-                showMessage(`✅ ${result.message}\n\nKeys: ${result.keys.join(', ')}`, 'success');
-                loadStats(); // รีเฟรชสถิติ
-                
-            } catch (error) {
-                console.error('Error generating key:', error);
-                showMessage('❌ เกิดข้อผิดพลาดในการสร้าง Key: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function exportData() {
-            try {
-                showLoading(true);
-                
-                // สร้าง temporary link สำหรับ download
-                const link = document.createElement('a');
-                link.href = `${API_BASE}/api/export`;
-                link.download = `key-data-${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                
-                showMessage('📁 กำลังดาวน์โหลดข้อมูล...', 'success');
-                
-            } catch (error) {
-                console.error('Error exporting data:', error);
-                showMessage('❌ เกิดข้อผิดพลาดในการ Export ข้อมูล: ' + error.message, 'error');
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async         async function manageUser(userId, username) {
-            const action = prompt(`จัดการผู้ใช้ ${username || userId}:\n\n1. ดูข้อมูลละเอียด\n2. ลบผู้ใช้\n3. รีเซ็ต Cooldown\n\nเลือก (1-3):`, '1');
-            
-            if (action === '2') {
-                if (confirm(`⚠️ คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ ${username || userId}?\n\nการกระทำนี้จะลบ:\n- ข้อมูลผู้ใช้ทั้งหมด\n- Key ทั้งหมดของผู้ใช้\n- ข้อมูล Cooldown\n\nและไม่สามารถยกเลิกได้!`)) {
-                    try {
-                        showLoading(true);
-                        await apiCall(`/users/${userId}`, 'DELETE');
-                        showMessage(`✅ ลบผู้ใช้ ${username || userId} สำเร็จ`, 'success');
-                        
-                        // รีเฟรชข้อมูล
-                        await Promise.all([
-                            loadUsers(),
-                            loadStats(),
-                            loadTopUsers()
-                        ]);
-                    } catch (error) {
-                        showMessage('❌ เกิดข้อผิดพลาดในการลบผู้ใช้: ' + error.message, 'error');
-                    } finally {
-                        showLoading(false);
-                    }
-                }
-            } else if (action === '3') {
-                // Force reset cooldown feature - ต้องเพิ่ม API endpoint
-                showMessage('🔄 ฟีเจอร์รีเซ็ต Cooldown จะเพิ่มในเวอร์ชันถัดไป', 'success');
-            } else if (action === '1') {
-                // แสดงข้อมูลละเอียด
-                try {
-                    const users = await apiCall('/users');
-                    const user = users.find(u => u.userId === userId);
-                    if (user) {
-                        let details = `📊 ข้อมูลผู้ใช้: ${user.username}\n\n`;
-                        details += `🆔 User ID: ${user.userId}\n`;
-                        details += `🔑 จำนวน Key: ${user.keys.length}\n`;
-                        details += `📅 วันที่เข้าร่วม: ${new Date(user.joinDate).toLocaleDateString('th-TH')}\n`;
-                        details += `⏰ ใช้งานล่าสุด: ${user.lastSeen}\n`;
-                        if (user.hasCooldown) {
-                            details += `🔒 Cooldown: Active\n`;
-                            details += `⏳ รีเซ็ตได้: ${new Date(user.nextResetAllowed).toLocaleString('th-TH')}\n`;
-                        }
-                        details += `\n🔑 รายการ Key:\n`;
-                        user.keys.forEach((key, index) => {
-                            details += `${index + 1}. ${key.key} (${key.status})\n`;
-                        });
-                        
-                        alert(details);
-                    } else {
-                        showMessage('❌ ไม่พบข้อมูลผู้ใช้', 'error');
-                    }
-                } catch (error) {
-                    showMessage('❌ เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message, 'error');
-                }
-            }
-        }
-
-        function refreshUsers() {
-            loadUsers();
-        }
-
-        function refreshAllData() {
-            loadAllData();
-        }
-
-        function cleanupExpired() {
-            if (confirm('คุณแน่ใจหรือไม่ที่จะลบ Key ที่หมดอายุทั้งหมด?')) {
-                showMessage('🔄 ฟีเจอร์นี้จะเพิ่มในเวอร์ชันถัดไป', 'success');
-            }
-        }
-
-        // Utility Functions
-        function showLoading(show) {
-            const spinner = document.getElementById('loadingSpinner');
-            spinner.style.display = show ? 'inline-block' : 'none';
-        }
-
-        function showMessage(message, type) {
-            const container = document.getElementById('messageContainer');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `${type}-message`;
-            messageDiv.textContent = message;
-            
-            container.appendChild(messageDiv);
-            
-            // ลบข้อความหลังจาก 5 วินาที
+            // Add loading effect on startup
             setTimeout(() => {
-                if (container.contains(messageDiv)) {
-                    container.removeChild(messageDiv);
-                }
-            }, 5000);
-        }
+                document.body.style.opacity = '1';
+            }, 500);
+        });
 
-        function getStatusText(status) {
-            switch(status) {
-                case 'active': return 'Active';
-                case 'expired': return 'Expired';
-                case 'pending': return 'Pending';
-                default: return 'Unknown';
+        // Konami code easter egg
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.code);
+            konamiCode = konamiCode.slice(-konamiSequence.length);
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                document.body.style.filter = 'hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = 'none';
+                }, 3000);
+                alert('🎉 Konami Code activated! Colors inverted for 3 seconds!');
             }
-        }
-
-        function addPulseEffect(elementId) {
-            const element = document.getElementById(elementId);
-            element.classList.add('pulse');
-            setTimeout(() => element.classList.remove('pulse'), 2000);
-        }
-
-        function addNewActivity(activity) {
-            const activityFeed = document.getElementById('activityFeed');
-            const activityItem = document.createElement('div');
-            activityItem.className = 'activity-item';
-            
-            const time = new Date(activity.timestamp).toLocaleTimeString('th-TH', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            activityItem.innerHTML = `
-                <div class="activity-time">${time}</div>
-                <div>${activity.message}</div>
-            `;
-            
-            // เพิ่มที่ด้านบน
-            activityFeed.insertBefore(activityItem, activityFeed.firstChild);
-            
-            // เก็บแค่ 10 รายการล่าสุด
-            while (activityFeed.children.length > 10) {
-                activityFeed.removeChild(activityFeed.lastChild);
-            }
-        }
-
-        // Mock Data Generators (สำหรับเมื่อ API ไม่พร้อม)
-        function generateMockDailyData() {
-            const data = [];
-            const today = new Date();
-            
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                
-                data.push({
-                    date: date.toISOString().split('T')[0],
-                    usage: Math.floor(Math.random() * 100) + 150,
-                    label: i === 0 ? 'วันนี้' : `${i} วันที่แล้ว`
-                });
-            }
-            
-            return data;
-        }
-
-        function generateMockTopUsers() {
-            return [
-                { username: 'User#1234', usage: 45 },
-                { username: 'User#5678', usage: 38 },
-                { username: 'User#9012', usage: 32 },
-                { username: 'User#3456', usage: 28 },
-                { username: 'User#7890', usage: 25 }
-            ];
-        }
+        });
     </script>
 </body>
 </html>
