@@ -368,13 +368,18 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">🔑</div>
-                <div class="stat-number" id="totalKeys">-</div>
-                <div class="stat-label">Total Keys</div>
+                <div class="stat-number" id="totalValidKeys">-</div>
+                <div class="stat-label">Total Valid Keys</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
-                <div class="stat-number" id="activeKeys">-</div>
-                <div class="stat-label">Active Keys</div>
+                <div class="stat-number" id="usedKeys">-</div>
+                <div class="stat-label">Used Keys</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number" id="availableKeys">-</div>
+                <div class="stat-label">Available Keys</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👥</div>
@@ -382,9 +387,14 @@
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">📈</div>
-                <div class="stat-number" id="todayUsage">-</div>
-                <div class="stat-label">Today's Usage</div>
+                <div class="stat-icon">⏰</div>
+                <div class="stat-number" id="activeCooldowns">-</div>
+                <div class="stat-label">Active Cooldowns</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔄</div>
+                <div class="stat-number" id="lastUpdated">-</div>
+                <div class="stat-label">Last Updated</div>
             </div>
         </div>
 
@@ -457,21 +467,35 @@
             
             socket.on('connect', () => {
                 updateConnectionStatus(true);
-                console.log('Connected to server');
+                console.log('✅ Connected to Key Management Server');
+                showMessage('🔗 เชื่อมต่อกับเซิร์ฟเวอร์สำเร็จ', 'success');
             });
             
             socket.on('disconnect', () => {
                 updateConnectionStatus(false);
-                console.log('Disconnected from server');
+                console.log('❌ Disconnected from server');
+                showMessage('⚠️ การเชื่อมต่อกับเซิร์ฟเวอร์ขาดหาย', 'error');
             });
             
             socket.on('stats_update', (stats) => {
+                console.log('📊 Real-time stats update received');
                 updateStats(stats);
-                addPulseEffect('totalKeys');
+                addPulseEffect('totalValidKeys');
             });
             
             socket.on('new_activity', (activity) => {
+                console.log('🔔 New activity received:', activity.message);
                 addNewActivity(activity);
+                showMessage(`🔔 ${activity.message}`, 'success');
+            });
+            
+            socket.on('initial_data', (data) => {
+                console.log('📡 Initial connection data:', data.message);
+            });
+            
+            socket.on('error', (error) => {
+                console.error('❌ Socket error:', error);
+                showMessage('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message, 'error');
             });
         }
 
@@ -548,10 +572,28 @@
 
         // Update Statistics Display
         function updateStats(stats) {
-            document.getElementById('totalKeys').textContent = stats.totalKeys;
-            document.getElementById('activeKeys').textContent = stats.activeKeys;
-            document.getElementById('totalUsers').textContent = stats.totalUsers;
-            document.getElementById('todayUsage').textContent = stats.todayUsage;
+            document.getElementById('totalValidKeys').textContent = stats.totalValidKeys || 'N/A';
+            document.getElementById('usedKeys').textContent = stats.usedKeys || 'N/A';
+            document.getElementById('availableKeys').textContent = stats.availableKeys || 'N/A';
+            document.getElementById('totalUsers').textContent = stats.totalUsers || 'N/A';
+            document.getElementById('activeCooldowns').textContent = stats.activeCooldowns || 'N/A';
+            
+            // Format last updated time
+            if (stats.lastUpdated) {
+                const lastUpdated = new Date(stats.lastUpdated);
+                const timeStr = lastUpdated.toLocaleTimeString('th-TH', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('lastUpdated').textContent = timeStr;
+            }
+            
+            // แสดงข้อมูลเพิ่มเติมใน console สำหรับ debug
+            console.log('📊 Stats updated:', {
+                utilization: stats.usedKeys && stats.totalValidKeys ? 
+                    `${((stats.usedKeys / stats.totalValidKeys) * 100).toFixed(1)}%` : 'N/A',
+                ...stats
+            });
         }
 
         // Load Users
@@ -570,16 +612,40 @@
             const userList = document.getElementById('userList');
             userList.innerHTML = '';
 
+            if (users.length === 0) {
+                userList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">ไม่มีผู้ใช้ในระบบ</div>';
+                return;
+            }
+
             users.forEach(user => {
                 const userItem = document.createElement('div');
                 userItem.className = 'user-item';
+                
+                // สร้าง status text
+                let statusInfo = getStatusText(user.status);
+                if (user.hasCooldown) {
+                    statusInfo += ' (Cooldown)';
+                }
+                
                 userItem.innerHTML = `
                     <div class="user-info">
                         <div class="user-avatar">${user.username.charAt(0)}</div>
                         <div>
                             <div style="font-weight: bold;">${user.username}</div>
-                            <div style="font-size: 0.85rem; color: #666;">${user.keys.length} keys • ${user.lastSeen}</div>
+                            <div style="font-size: 0.85rem; color: #666;">
+                                ${user.keys.length} key(s) • ${user.lastSeen}
+                                ${user.hasCooldown ? ' • 🔒 Cooldown active' : ''}
+                            </div>
                         </div>
+                    </div>
+                    <div>
+                        <span class="status ${user.status}">${statusInfo}</span>
+                        <button class="btn btn-danger btn-small" onclick="manageUser('${user.userId}', '${user.username}')">จัดการ</button>
+                    </div>
+                `;
+                userList.appendChild(userItem);
+            });
+        }                        </div>
                     </div>
                     <div>
                         <span class="status ${user.status}">${getStatusText(user.status)}</span>
@@ -670,12 +736,21 @@
                 topUsersChart.destroy();
             }
             
+            if (users.length === 0) {
+                // แสดงข้อความเมื่อไม่มีข้อมูล
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('ไม่มีข้อมูลผู้ใช้', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+            
             topUsersChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                     labels: users.map(user => user.username),
                     datasets: [{
-                        data: users.map(user => user.usage),
+                        data: users.map(user => user.keyCount),
                         backgroundColor: [
                             '#FF6384',
                             '#36A2EB',
@@ -690,6 +765,13 @@
                     plugins: {
                         legend: {
                             position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed} key(s)`;
+                                }
+                            }
                         }
                     }
                 }
@@ -773,22 +855,58 @@
             }
         }
 
-        async function manageUser(userId) {
-            const action = prompt(`จัดการผู้ใช้ ${userId}:\n\n1. ดูข้อมูลละเอียด\n2. ลบผู้ใช้\n\nเลือก (1-2):`, '1');
+        async         async function manageUser(userId, username) {
+            const action = prompt(`จัดการผู้ใช้ ${username || userId}:\n\n1. ดูข้อมูลละเอียด\n2. ลบผู้ใช้\n3. รีเซ็ต Cooldown\n\nเลือก (1-3):`, '1');
             
             if (action === '2') {
-                if (confirm(`คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ ${userId}?`)) {
+                if (confirm(`⚠️ คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ ${username || userId}?\n\nการกระทำนี้จะลบ:\n- ข้อมูลผู้ใช้ทั้งหมด\n- Key ทั้งหมดของผู้ใช้\n- ข้อมูล Cooldown\n\nและไม่สามารถยกเลิกได้!`)) {
                     try {
+                        showLoading(true);
                         await apiCall(`/users/${userId}`, 'DELETE');
-                        showMessage(`✅ ลบผู้ใช้ ${userId} สำเร็จ`, 'success');
-                        loadUsers();
-                        loadStats();
+                        showMessage(`✅ ลบผู้ใช้ ${username || userId} สำเร็จ`, 'success');
+                        
+                        // รีเฟรชข้อมูล
+                        await Promise.all([
+                            loadUsers(),
+                            loadStats(),
+                            loadTopUsers()
+                        ]);
                     } catch (error) {
                         showMessage('❌ เกิดข้อผิดพลาดในการลบผู้ใช้: ' + error.message, 'error');
+                    } finally {
+                        showLoading(false);
                     }
                 }
-            } else {
-                showMessage('🔄 กำลังเปิดหน้าจัดการผู้ใช้...', 'success');
+            } else if (action === '3') {
+                // Force reset cooldown feature - ต้องเพิ่ม API endpoint
+                showMessage('🔄 ฟีเจอร์รีเซ็ต Cooldown จะเพิ่มในเวอร์ชันถัดไป', 'success');
+            } else if (action === '1') {
+                // แสดงข้อมูลละเอียด
+                try {
+                    const users = await apiCall('/users');
+                    const user = users.find(u => u.userId === userId);
+                    if (user) {
+                        let details = `📊 ข้อมูลผู้ใช้: ${user.username}\n\n`;
+                        details += `🆔 User ID: ${user.userId}\n`;
+                        details += `🔑 จำนวน Key: ${user.keys.length}\n`;
+                        details += `📅 วันที่เข้าร่วม: ${new Date(user.joinDate).toLocaleDateString('th-TH')}\n`;
+                        details += `⏰ ใช้งานล่าสุด: ${user.lastSeen}\n`;
+                        if (user.hasCooldown) {
+                            details += `🔒 Cooldown: Active\n`;
+                            details += `⏳ รีเซ็ตได้: ${new Date(user.nextResetAllowed).toLocaleString('th-TH')}\n`;
+                        }
+                        details += `\n🔑 รายการ Key:\n`;
+                        user.keys.forEach((key, index) => {
+                            details += `${index + 1}. ${key.key} (${key.status})\n`;
+                        });
+                        
+                        alert(details);
+                    } else {
+                        showMessage('❌ ไม่พบข้อมูลผู้ใช้', 'error');
+                    }
+                } catch (error) {
+                    showMessage('❌ เกิดข้อผิดพลาดในการดึงข้อมูล: ' + error.message, 'error');
+                }
             }
         }
 
