@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Key Management Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <style>
         * {
             margin: 0;
@@ -32,20 +33,34 @@
             padding: 20px;
             margin-bottom: 30px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .header h1 {
             color: white;
             font-size: 2.5rem;
-            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 15px;
         }
 
-        .header p {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1.1rem;
+        .connection-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
         }
 
         .stats-grid {
@@ -189,11 +204,6 @@
             color: #721c24;
         }
 
-        .status.pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
         .btn {
             padding: 10px 20px;
             border: none;
@@ -256,6 +266,56 @@
             min-width: 80px;
         }
 
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid,
+            .management-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
         .refresh-btn {
             position: fixed;
             bottom: 30px;
@@ -277,32 +337,6 @@
             box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
         }
 
-        @media (max-width: 768px) {
-            .charts-grid,
-            .management-section {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-        }
-
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #007bff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .pulse {
             animation: pulse 2s infinite;
         }
@@ -322,29 +356,34 @@
                 🔐 Key Management Dashboard
                 <span class="loading" id="loadingSpinner" style="display: none;"></span>
             </h1>
-            <p>Real-time monitoring และจัดการ Key System</p>
+            <div class="connection-status disconnected" id="connectionStatus">
+                🔴 Connecting...
+            </div>
         </div>
+
+        <!-- Error/Success Messages -->
+        <div id="messageContainer"></div>
 
         <!-- Statistics Cards -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">🔑</div>
-                <div class="stat-number" id="totalKeys">156</div>
+                <div class="stat-number" id="totalKeys">-</div>
                 <div class="stat-label">Total Keys</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">✅</div>
-                <div class="stat-number" id="activeKeys">142</div>
+                <div class="stat-number" id="activeKeys">-</div>
                 <div class="stat-label">Active Keys</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">👥</div>
-                <div class="stat-number" id="totalUsers">89</div>
+                <div class="stat-number" id="totalUsers">-</div>
                 <div class="stat-label">Total Users</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📈</div>
-                <div class="stat-number" id="todayUsage">247</div>
+                <div class="stat-number" id="todayUsage">-</div>
                 <div class="stat-label">Today's Usage</div>
             </div>
         </div>
@@ -366,9 +405,9 @@
             <div class="panel">
                 <h3>👨‍💼 User Management</h3>
                 <div class="user-list" id="userList">
-                    <!-- Users will be loaded here -->
+                    <div class="loading" style="margin: 20px auto;"></div>
                 </div>
-                <button class="btn btn-primary" onclick="showAllUsers()">View All Users</button>
+                <button class="btn btn-primary" onclick="refreshUsers()">Refresh Users</button>
             </div>
             <div class="panel">
                 <h3>🔧 Quick Actions</h3>
@@ -384,61 +423,201 @@
         <div class="activity-feed">
             <h3>📝 Recent Activity</h3>
             <div id="activityFeed">
-                <!-- Activity items will be loaded here -->
+                <div class="loading" style="margin: 20px auto;"></div>
             </div>
         </div>
     </div>
 
     <!-- Refresh Button -->
-    <button class="refresh-btn" onclick="refreshData()" title="Refresh Data">
+    <button class="refresh-btn" onclick="refreshAllData()" title="Refresh All Data">
         🔄
     </button>
 
     <script>
-        // Sample data - ในการใช้งานจริงจะดึงจาก API
-        const sampleData = {
-            stats: {
-                totalKeys: 156,
-                activeKeys: 142,
-                totalUsers: 89,
-                todayUsage: 247
-            },
-            dailyUsage: [120, 135, 180, 165, 190, 220, 247],
-            labels: ['6 วันที่แล้ว', '5 วันที่แล้ว', '4 วันที่แล้ว', '3 วันที่แล้ว', '2 วันที่แล้ว', 'เมื่อวาน', 'วันนี้'],
-            topUsers: [
-                { name: 'User#1234', usage: 45 },
-                { name: 'User#5678', usage: 38 },
-                { name: 'User#9012', usage: 32 },
-                { name: 'User#3456', usage: 28 },
-                { name: 'User#7890', usage: 25 }
-            ],
-            users: [
-                { id: '1234', name: 'AdminUser#1234', status: 'active', keys: 3, lastSeen: '2 นาทีที่แล้ว' },
-                { id: '5678', name: 'PowerUser#5678', status: 'active', keys: 2, lastSeen: '15 นาทีที่แล้ว' },
-                { id: '9012', name: 'TestUser#9012', status: 'expired', keys: 1, lastSeen: '2 ชั่วโมงที่แล้ว' },
-                { id: '3456', name: 'NewUser#3456', status: 'pending', keys: 1, lastSeen: '1 วันที่แล้ว' },
-                { id: '7890', name: 'VIPUser#7890', status: 'active', keys: 5, lastSeen: '30 นาทีที่แล้ว' }
-            ],
-            activities: [
-                { time: '14:32', action: 'User#1234 used key BQ27-FK38-MZN2', type: 'usage' },
-                { time: '14:28', action: 'New key generated: XK19-JL83-YTU9', type: 'generate' },
-                { time: '14:15', action: 'User#5678 reset HWID for key MA47-KX28-CPQ1', type: 'reset' },
-                { time: '13:45', action: 'Admin exported user data', type: 'export' },
-                { time: '13:20', action: 'User#9012 key expired', type: 'expire' }
-            ]
-        };
+        // Global variables
+        let socket;
+        let dailyChart;
+        let topUsersChart;
+        
+        // API Base URL - เปลี่ยนตามที่คุณ host
+        const API_BASE = window.location.origin;
 
-        // Initialize Charts
-        function initCharts() {
-            // Daily Usage Chart
-            const dailyCtx = document.getElementById('dailyUsageChart').getContext('2d');
-            new Chart(dailyCtx, {
+        // Initialize Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSocket();
+            loadAllData();
+            
+            // Auto-refresh ทุก 5 นาที
+            setInterval(loadAllData, 5 * 60 * 1000);
+        });
+
+        // Socket.IO Connection
+        function initializeSocket() {
+            socket = io(API_BASE);
+            
+            socket.on('connect', () => {
+                updateConnectionStatus(true);
+                console.log('Connected to server');
+            });
+            
+            socket.on('disconnect', () => {
+                updateConnectionStatus(false);
+                console.log('Disconnected from server');
+            });
+            
+            socket.on('stats_update', (stats) => {
+                updateStats(stats);
+                addPulseEffect('totalKeys');
+            });
+            
+            socket.on('new_activity', (activity) => {
+                addNewActivity(activity);
+            });
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusEl = document.getElementById('connectionStatus');
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusEl.innerHTML = '🟢 Connected';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.innerHTML = '🔴 Disconnected';
+            }
+        }
+
+        // Load all data
+        async function loadAllData() {
+            showLoading(true);
+            try {
+                await Promise.all([
+                    loadStats(),
+                    loadUsers(),
+                    loadDailyUsage(),
+                    loadTopUsers(),
+                    loadActivities()
+                ]);
+                showMessage('✅ ข้อมูลถูกโหลดเรียบร้อยแล้ว', 'success');
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showMessage('❌ เกิดข้อผิดพลาดในการโหลดข้อมูล: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // API Calls
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const options = {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            const response = await fetch(`${API_BASE}/api${endpoint}`, options);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        }
+
+        // Load Statistics
+        async function loadStats() {
+            try {
+                const stats = await apiCall('/stats');
+                updateStats(stats);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // แสดงข้อมูล placeholder เมื่อ API ไม่พร้อมใช้งาน
+                updateStats({
+                    totalKeys: 'N/A',
+                    activeKeys: 'N/A',
+                    totalUsers: 'N/A',
+                    todayUsage: 'N/A'
+                });
+            }
+        }
+
+        // Update Statistics Display
+        function updateStats(stats) {
+            document.getElementById('totalKeys').textContent = stats.totalKeys;
+            document.getElementById('activeKeys').textContent = stats.activeKeys;
+            document.getElementById('totalUsers').textContent = stats.totalUsers;
+            document.getElementById('todayUsage').textContent = stats.todayUsage;
+        }
+
+        // Load Users
+        async function loadUsers() {
+            try {
+                const users = await apiCall('/users');
+                displayUsers(users.slice(0, 5)); // แสดงแค่ 5 คนแรก
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('userList').innerHTML = '<div class="error-message">ไม่สามารถโหลดข้อมูลผู้ใช้ได้</div>';
+            }
+        }
+
+        // Display Users
+        function displayUsers(users) {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+
+            users.forEach(user => {
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="user-avatar">${user.username.charAt(0)}</div>
+                        <div>
+                            <div style="font-weight: bold;">${user.username}</div>
+                            <div style="font-size: 0.85rem; color: #666;">${user.keys.length} keys • ${user.lastSeen}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="status ${user.status}">${getStatusText(user.status)}</span>
+                        <button class="btn btn-danger btn-small" onclick="manageUser('${user.userId}')">จัดการ</button>
+                    </div>
+                `;
+                userList.appendChild(userItem);
+            });
+        }
+
+        // Load Daily Usage Chart
+        async function loadDailyUsage() {
+            try {
+                const dailyData = await apiCall('/usage/daily');
+                updateDailyChart(dailyData);
+            } catch (error) {
+                console.error('Error loading daily usage:', error);
+                // แสดงข้อมูล mock เมื่อ API ไม่พร้อม
+                const mockData = generateMockDailyData();
+                updateDailyChart(mockData);
+            }
+        }
+
+        // Update Daily Usage Chart
+        function updateDailyChart(data) {
+            const ctx = document.getElementById('dailyUsageChart').getContext('2d');
+            
+            if (dailyChart) {
+                dailyChart.destroy();
+            }
+            
+            dailyChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sampleData.labels,
+                    labels: data.map(d => d.label),
                     datasets: [{
                         label: 'การใช้งาน Key',
-                        data: sampleData.dailyUsage,
+                        data: data.map(d => d.usage),
                         borderColor: '#007bff',
                         backgroundColor: 'rgba(0, 123, 255, 0.1)',
                         borderWidth: 3,
@@ -468,15 +647,35 @@
                     }
                 }
             });
+        }
 
-            // Top Users Chart
-            const topUsersCtx = document.getElementById('topUsersChart').getContext('2d');
-            new Chart(topUsersCtx, {
+        // Load Top Users Chart
+        async function loadTopUsers() {
+            try {
+                const topUsers = await apiCall('/users/top');
+                updateTopUsersChart(topUsers);
+            } catch (error) {
+                console.error('Error loading top users:', error);
+                // แสดงข้อมูล mock เมื่อ API ไม่พร้อม
+                const mockData = generateMockTopUsers();
+                updateTopUsersChart(mockData);
+            }
+        }
+
+        // Update Top Users Chart
+        function updateTopUsersChart(users) {
+            const ctx = document.getElementById('topUsersChart').getContext('2d');
+            
+            if (topUsersChart) {
+                topUsersChart.destroy();
+            }
+            
+            topUsersChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: sampleData.topUsers.map(user => user.name),
+                    labels: users.map(user => user.username),
                     datasets: [{
-                        data: sampleData.topUsers.map(user => user.usage),
+                        data: users.map(user => user.usage),
                         backgroundColor: [
                             '#FF6384',
                             '#36A2EB',
@@ -497,56 +696,138 @@
             });
         }
 
-        // Load user list
-        function loadUsers() {
-            const userList = document.getElementById('userList');
-            userList.innerHTML = '';
-
-            sampleData.users.slice(0, 5).forEach(user => {
-                const userItem = document.createElement('div');
-                userItem.className = 'user-item';
-                userItem.innerHTML = `
-                    <div class="user-info">
-                        <div class="user-avatar">${user.name.charAt(0)}</div>
-                        <div>
-                            <div style="font-weight: bold;">${user.name}</div>
-                            <div style="font-size: 0.85rem; color: #666;">${user.keys} keys • ${user.lastSeen}</div>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="status ${user.status}">${getStatusText(user.status)}</span>
-                        <button class="btn btn-danger btn-small" onclick="manageUser('${user.id}')">จัดการ</button>
-                    </div>
-                `;
-                userList.appendChild(userItem);
-            });
+        // Load Activities
+        async function loadActivities() {
+            try {
+                const activities = await apiCall('/activities');
+                displayActivities(activities);
+            } catch (error) {
+                console.error('Error loading activities:', error);
+                document.getElementById('activityFeed').innerHTML = '<div class="error-message">ไม่สามารถโหลดกิจกรรมได้</div>';
+            }
         }
 
-        // Load activity feed
-        function loadActivities() {
+        // Display Activities
+        function displayActivities(activities) {
             const activityFeed = document.getElementById('activityFeed');
             activityFeed.innerHTML = '';
 
-            sampleData.activities.forEach(activity => {
+            activities.forEach(activity => {
                 const activityItem = document.createElement('div');
                 activityItem.className = 'activity-item';
+                
+                const time = new Date(activity.timestamp).toLocaleTimeString('th-TH', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
                 activityItem.innerHTML = `
-                    <div class="activity-time">${activity.time}</div>
-                    <div>${activity.action}</div>
+                    <div class="activity-time">${time}</div>
+                    <div>${activity.message}</div>
                 `;
                 activityFeed.appendChild(activityItem);
             });
         }
 
-        // Update statistics
-        function updateStats() {
-            document.getElementById('totalKeys').textContent = sampleData.stats.totalKeys;
-            document.getElementById('activeKeys').textContent = sampleData.stats.activeKeys;
-            document.getElementById('totalUsers').textContent = sampleData.stats.totalUsers;
-            document.getElementById('todayUsage').textContent = sampleData.stats.todayUsage;
+        // Action Functions
+        async function generateNewKey() {
+            try {
+                showLoading(true);
+                const amount = prompt('จำนวน Key ที่ต้องการสร้าง (1-10):', '1');
+                
+                if (!amount || isNaN(amount) || amount < 1 || amount > 10) {
+                    showMessage('❌ จำนวน Key ไม่ถูกต้อง', 'error');
+                    return;
+                }
+                
+                const result = await apiCall('/keys/generate', 'POST', { amount: parseInt(amount) });
+                
+                showMessage(`✅ ${result.message}\n\nKeys: ${result.keys.join(', ')}`, 'success');
+                loadStats(); // รีเฟรชสถิติ
+                
+            } catch (error) {
+                console.error('Error generating key:', error);
+                showMessage('❌ เกิดข้อผิดพลาดในการสร้าง Key: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
-        // Helper functions
+        async function exportData() {
+            try {
+                showLoading(true);
+                
+                // สร้าง temporary link สำหรับ download
+                const link = document.createElement('a');
+                link.href = `${API_BASE}/api/export`;
+                link.download = `key-data-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                
+                showMessage('📁 กำลังดาวน์โหลดข้อมูล...', 'success');
+                
+            } catch (error) {
+                console.error('Error exporting data:', error);
+                showMessage('❌ เกิดข้อผิดพลาดในการ Export ข้อมูล: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function manageUser(userId) {
+            const action = prompt(`จัดการผู้ใช้ ${userId}:\n\n1. ดูข้อมูลละเอียด\n2. ลบผู้ใช้\n\nเลือก (1-2):`, '1');
+            
+            if (action === '2') {
+                if (confirm(`คุณแน่ใจหรือไม่ที่จะลบผู้ใช้ ${userId}?`)) {
+                    try {
+                        await apiCall(`/users/${userId}`, 'DELETE');
+                        showMessage(`✅ ลบผู้ใช้ ${userId} สำเร็จ`, 'success');
+                        loadUsers();
+                        loadStats();
+                    } catch (error) {
+                        showMessage('❌ เกิดข้อผิดพลาดในการลบผู้ใช้: ' + error.message, 'error');
+                    }
+                }
+            } else {
+                showMessage('🔄 กำลังเปิดหน้าจัดการผู้ใช้...', 'success');
+            }
+        }
+
+        function refreshUsers() {
+            loadUsers();
+        }
+
+        function refreshAllData() {
+            loadAllData();
+        }
+
+        function cleanupExpired() {
+            if (confirm('คุณแน่ใจหรือไม่ที่จะลบ Key ที่หมดอายุทั้งหมด?')) {
+                showMessage('🔄 ฟีเจอร์นี้จะเพิ่มในเวอร์ชันถัดไป', 'success');
+            }
+        }
+
+        // Utility Functions
+        function showLoading(show) {
+            const spinner = document.getElementById('loadingSpinner');
+            spinner.style.display = show ? 'inline-block' : 'none';
+        }
+
+        function showMessage(message, type) {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `${type}-message`;
+            messageDiv.textContent = message;
+            
+            container.appendChild(messageDiv);
+            
+            // ลบข้อความหลังจาก 5 วินาที
+            setTimeout(() => {
+                if (container.contains(messageDiv)) {
+                    container.removeChild(messageDiv);
+                }
+            }, 5000);
+        }
+
         function getStatusText(status) {
             switch(status) {
                 case 'active': return 'Active';
@@ -556,106 +837,64 @@
             }
         }
 
-        // Action functions
-        function refreshData() {
-            const spinner = document.getElementById('loadingSpinner');
-            const refreshBtn = document.querySelector('.refresh-btn');
-            
-            spinner.style.display = 'inline-block';
-            refreshBtn.style.transform = 'scale(1.1) rotate(360deg)';
-            
-            // Simulate API call
-            setTimeout(() => {
-                // Update with new data (in real app, fetch from API)
-                sampleData.stats.todayUsage += Math.floor(Math.random() * 10);
-                sampleData.dailyUsage[6] = sampleData.stats.todayUsage;
-                
-                updateStats();
-                loadUsers();
-                loadActivities();
-                
-                spinner.style.display = 'none';
-                refreshBtn.style.transform = '';
-                
-                // Show success animation
-                document.body.style.background = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
-                setTimeout(() => {
-                    document.body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-                }, 500);
-            }, 1500);
+        function addPulseEffect(elementId) {
+            const element = document.getElementById(elementId);
+            element.classList.add('pulse');
+            setTimeout(() => element.classList.remove('pulse'), 2000);
         }
 
-        function generateNewKey() {
-            const keys = ['ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'];
-            let newKey = '';
-            for (let i = 0; i < 3; i++) {
-                if (i > 0) newKey += '-';
-                for (let j = 0; j < 4; j++) {
-                    newKey += keys[0].charAt(Math.floor(Math.random() * keys[0].length));
-                }
-            }
-            alert(`🔑 New Key Generated: ${newKey}\n\nKey has been added to the system!`);
+        function addNewActivity(activity) {
+            const activityFeed = document.getElementById('activityFeed');
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
             
-            // Update stats
-            sampleData.stats.totalKeys++;
-            sampleData.stats.activeKeys++;
-            updateStats();
-        }
-
-        function exportData() {
-            const data = JSON.stringify(sampleData, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `key-data-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+            const time = new Date(activity.timestamp).toLocaleTimeString('th-TH', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
             
-            alert('📁 Data exported successfully!');
-        }
-
-        function cleanupExpired() {
-            if (confirm('คุณแน่ใจหรือไม่ที่จะลบ Key ที่หมดอายุทั้งหมด?')) {
-                const expiredCount = sampleData.stats.totalKeys - sampleData.stats.activeKeys;
-                sampleData.stats.totalKeys = sampleData.stats.activeKeys;
-                updateStats();
-                alert(`🗑️ ลบ Key ที่หมดอายุแล้ว ${expiredCount} key(s)`);
+            activityItem.innerHTML = `
+                <div class="activity-time">${time}</div>
+                <div>${activity.message}</div>
+            `;
+            
+            // เพิ่มที่ด้านบน
+            activityFeed.insertBefore(activityItem, activityFeed.firstChild);
+            
+            // เก็บแค่ 10 รายการล่าสุด
+            while (activityFeed.children.length > 10) {
+                activityFeed.removeChild(activityFeed.lastChild);
             }
         }
 
-        function showAllUsers() {
-            alert('🔄 Redirecting to full user management page...');
-        }
-
-        function manageUser(userId) {
-            const user = sampleData.users.find(u => u.id === userId);
-            if (user) {
-                alert(`👨‍💼 Managing user: ${user.name}\n\nActions available:\n- View details\n- Reset HWID\n- Ban/Unban\n- View usage history`);
-            }
-        }
-
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            updateStats();
-            initCharts();
-            loadUsers();
-            loadActivities();
+        // Mock Data Generators (สำหรับเมื่อ API ไม่พร้อม)
+        function generateMockDailyData() {
+            const data = [];
+            const today = new Date();
             
-            // Auto-refresh every 30 seconds
-            setInterval(() => {
-                // Simulate real-time updates
-                if (Math.random() > 0.7) {
-                    sampleData.stats.todayUsage++;
-                    updateStats();
-                    
-                    // Add pulse effect to today's usage
-                    const todayUsageEl = document.getElementById('todayUsage');
-                    todayUsageEl.classList.add('pulse');
-                    setTimeout(() => todayUsageEl.classList.remove('pulse'), 2000);
-                }
-            }, 30000);
-        });
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                
+                data.push({
+                    date: date.toISOString().split('T')[0],
+                    usage: Math.floor(Math.random() * 100) + 150,
+                    label: i === 0 ? 'วันนี้' : `${i} วันที่แล้ว`
+                });
+            }
+            
+            return data;
+        }
+
+        function generateMockTopUsers() {
+            return [
+                { username: 'User#1234', usage: 45 },
+                { username: 'User#5678', usage: 38 },
+                { username: 'User#9012', usage: 32 },
+                { username: 'User#3456', usage: 28 },
+                { username: 'User#7890', usage: 25 }
+            ];
+        }
     </script>
 </body>
 </html>
